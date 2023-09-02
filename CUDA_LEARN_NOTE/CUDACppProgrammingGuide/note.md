@@ -72,7 +72,7 @@ CUDA模块和接口开发文档 V12.2
 
 &emsp;&emsp;多核cpu和多核gpu的出现意味着主流处理器芯片现在是并行系统。当前的挑战是开发能够透明地扩展其并行性的应用软件，以利用不断增加的处理器核数，就像3D图形应用程序能够透明地将其并行性扩展到具有不同核数的众核gpu一样。
 &emsp;&emsp;CUDA并行编程模型旨在克服这一挑战，同时对熟悉C等标准编程语言的程序员保持较低的学习曲线。
-其核心是三个关键的抽象——线程组的层次结构、共享内存和同步屏障——它们只是作为最小的语言扩展集暴露给程序员。
+其核心是三个关键的抽象——线程组的层次结构、`shared memory`和同步屏障——它们只是作为最小的语言扩展集暴露给程序员。
 &emsp;&emsp;这些抽象提供细粒度的数据并行性和线程并行性，嵌套在粗粒度的数据并行性和任务并行性中。它们指导程序员将问题划分为可由线程块独立并行求解的粗粒度子问题，以及可由线程块内所有线程协同并行求解的细粒度子问题。
 &emsp;&emsp;这种分解允许线程在解决每个子问题时进行协作，从而保持了语言的表达能力，同时允许自动扩展。 实际上，每个线程块都可以以任意顺序(并发或顺序)在GPU内的任何可用多处理器上调度，因此编译后的CUDA程序可以在任意数量的多处理器上执行，如[图1.3](#picture-1.3)所示，只有`runtime`系统需要知道物理多处理器数量。
 &emsp;&emsp;这种可扩展的编程模型允许GPU架构通过简单地扩展多处理器和内存分区的数量来跨越广泛的市场范围:从高性能爱好者GeForce GPU和专业Quadro和Tesla计算产品到各种廉价的主流GeForce GPU(有关所有cuda支持的GPU的列表，请参阅[支持CUDA的gpu](#Title-6))。
@@ -239,9 +239,9 @@ int main()
 
 &emsp;&emsp;线程`block`需要独立执行：必须能够以任意顺序执行它们，并行或串行。这种独立性要求允许线程`block`在任意数量的核心上按任意顺序进行调度，如[图1.3](#picture-1.3)所示，使程序员能够编写与核数量相关的代码。
 
-&emsp;&emsp;同一个`block`中的线程可以通过共享内存共享数据，并通过同步它们的执行来协调内存访问。更准确地说，可以在`kernel`中调用`__syncthreads()`内部函数来指定同步的地方。`__syncthreads()`就像一个屏障，`block`中的所有线程都必须等待，然后才允许继续执行。[共享内存](#Title-3.2.4)给出了一个使用共享内存的例子。除了`__syncthreads()`之外，[协作组API](#Title-8)还提供了一组丰富的线程同步原语。
+&emsp;&emsp;同一个`block`中的线程可以通过`shared memory`共享数据，并通过同步它们的执行来协调内存访问。更准确地说，可以在`kernel`中调用`__syncthreads()`内部函数来指定同步的地方。`__syncthreads()`就像一个屏障，`block`中的所有线程都必须等待，然后才允许继续执行。[`shared memory`](#Title-3.2.4)给出了一个使用`shared memory`的例子。除了`__syncthreads()`之外，[协作组API](#Title-8)还提供了一组丰富的线程同步原语。
 
-&emsp;&emsp;为了高效合作，共享内存应该是靠近每个处理器核心的低延迟内存(很像L1缓存)，`__syncthreads()`应该是轻量级的。
+&emsp;&emsp;为了高效合作，`shared memory`应该是靠近每个处理器核心的低延迟内存(很像L1缓存)，`__syncthreads()`应该是轻量级的。
 
 <span id="Title-2.2.1"></span>
 
@@ -336,12 +336,12 @@ int main()
 
 &emsp;&emsp;支持计算能力为9.0的gpu，`cluster`中的所有线程`block`都保证在单个GPU处理集群(GPU Processing Cluster, GPC)上共同调度，并允许`cluster`中的线程`block`使用集群组API cluster.sync()执行硬件支持的同步。`cluster`组还提供了成员函数，分别使用`num_threads()`API查询线程数大小，`num_blocks()`API查询线程`block`大小。可以使用`dim_threads()`API查询`cluster group`中线程的下标，使用`dim_blocks()`API查询`cluster group`中`block`的下标。
 
-&emsp;&emsp;属于`cluster`的线程`block`可以访问分布式共享内存。`cluster`中的线程`block`能够对分布式共享内存中的任何地址进行读、写和执行原子操作。[分布式共享](#Title-3.2.5)内存给出了一个在分布式共享内存中执行矩阵的示例。
+&emsp;&emsp;属于`cluster`的线程`block`可以访问`distributed shared memory`。`cluster`中的线程`block`能够对`distributed shared memory`中的任何地址进行读、写和执行原子操作。[分布式共享](#Title-3.2.5)内存给出了一个在`distributed shared memory`中执行矩阵的示例。
 
 <span id="Title-2.3"></span>
 ## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory"> 2.3、内存层级</a>
 
-&emsp;&emsp;CUDA线程可以在执行期间访问多个内存空间中的数据，[如图](#picture-2.3)所示。每个线程都有私有的本地内存。每个线程`block`都有共享内存，对该`block`的所有线程可见，并且与该`block`具有相同的生存期。线程`block cluster`中的线程`block`可以对彼此的共享内存执行读、写和原子操作。所有线程都可以访问相同的全局内存。
+&emsp;&emsp;CUDA线程可以在执行期间访问多个内存空间中的数据，[如图](#picture-2.3)所示。每个线程都有私有的本地内存。每个线程`block`都有`shared memory`，对该`block`的所有线程可见，并且与该`block`具有相同的生存期。线程`block cluster`中的线程`block`可以对彼此的`shared memory`执行读、写和原子操作。所有线程都可以访问相同的全局内存。
 
 &emsp;&emsp;还有两个额外的只读内存空间可供所有线程访问：`constant`和`texture`内存空间。`global`、`constant`和`texture`内存空间针对不同用途的内存进行了优化(参见[`device`内存访问](#Title-5.3.2))。`texture`内存还提供了不同的寻址方式，以及一些特定数据格式的数据过滤(参见[`texture`和`surface`内存](#Title-3.2.14))。
 
@@ -582,7 +582,7 @@ nvcc x.cu
 
 &emsp;&emsp;正如在[异构编程](#Title-2.4)中提到的，CUDA编程模型假定一个由`host`和`device`组成的系统，每个`host`和`device`都有自己独立的内存。[`device`内存](#Title-3.2.2)概述了用于管理`device`内存的`runtime`函数。
 
-&emsp;&emsp;[共享内存](#Title-3.2.4)演示了如何使用[线程层次结构](#Title-2.2)中引入的共享内存来最大限度地提高性能。
+&emsp;&emsp;[`shared memory`](#Title-3.2.4)演示了如何使用[线程层次结构](#Title-2.2)中引入的`shared memory`来最大限度地提高性能。
 
 &emsp;&emsp;[页面锁定`host`内存](#Title-3.2.6)引入页面锁定`host`内存，需要重叠`kernel`执行与`host`内存和`device`内存之间的数据传输。
 
@@ -996,11 +996,11 @@ enum cudaLimit {
 
 <span id="Title-3.2.4"></span>
 
-### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory"> 3.2.4、共享内存</a>
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory"> 3.2.4、`shared memory`</a>
 
-&emsp;&emsp;如[可变内存空间说明符](#Title-7.2)所详述的，共享内存是使用`__shared__`内存空间说明符分配的。共享内存预计将比[线程层次结构](#Title-2.2)中提到的`global`内存快得多，在[共享内存](#Title-3.2.4)中有详细说明。它可以用作暂存式记忆体缓存(或软件管理的缓存)，以减少来自 CUDA`block`的`global`内存访问，如下面的[矩阵乘法示例](#code-3.11)所示。
+&emsp;&emsp;如[可变内存空间说明符](#Title-7.2)所详述的，`shared memory`是使用`__shared__`内存空间说明符分配的。`shared memory`预计将比[线程层次结构](#Title-2.2)中提到的`global`内存快得多，在[`shared memory`](#Title-3.2.4)中有详细说明。它可以用作暂存式记忆体缓存(或软件管理的缓存)，以减少来自 CUDA`block`的`global`内存访问，如下面的[矩阵乘法示例](#code-3.11)所示。
 
-&emsp;&emsp;下面的[代码示例](#code-3.11)是一个简单的矩阵乘法实现，它没有利用共享内存。每个线程读取一行A和一列B，并计算C的对应元素，[如图](#picture-3.1)所示。因此，从`global`内存中读取A是B的宽度时间，而B是读取A的高度时间。
+&emsp;&emsp;下面的[代码示例](#code-3.11)是一个简单的矩阵乘法实现，它没有利用`shared memory`。每个线程读取一行A和一列B，并计算C的对应元素，[如图](#picture-3.1)所示。因此，从`global`内存中读取A是B的宽度时间，而B是读取A的高度时间。
 
 <span id="code-3.11"></span>
 
@@ -1085,11 +1085,11 @@ __global__ void MatMulKernel(Matrix A, Matrix B, Matrix C)
 
 &emsp;&emsp;[没有共享记忆的矩阵乘法](#picture-3.1)。
 
-&emsp;&emsp;下面的[代码示例](#code-3.12)是一个利用共享内存的矩阵乘法实现。在该实现中，每个线程块负责计算C的一个平方子矩阵Csub，每个线程`block`内的线程负责计算Csub的一个元素。[如图](#picture-3.2)所示，Csub等于两个矩阵的乘积：维度a的子矩阵(a宽，`block`大小)与Csub的行指数相同，维度b的子矩阵(`block`大小，a宽)与列指数相同。为了适应器件的资源，将这两个矩阵按需要分成多个维数为block_size的方阵，并计算Csub作为这些方阵的乘积之和。这些产品都是通过首先将两个对应的方阵从`global`存储器加载到共享存储器，由一个线程加载每个矩阵的一个元素，然后让每个线程计算产品的一个元素来完成的。每个线程将这些产品的结果累积到一个寄存器中，并在完成后将结果写入`global`内存。
+&emsp;&emsp;下面的[代码示例](#code-3.12)是一个利用`shared memory`的矩阵乘法实现。在该实现中，每个线程`block`负责计算C的一个平方子矩阵Csub，每个线程`block`内的线程负责计算Csub的一个元素。[如图](#picture-3.2)所示，Csub等于两个矩阵的乘积：维度a的子矩阵(a宽，`block`大小)与Csub的行指数相同，维度b的子矩阵(`block`大小，a宽)与列指数相同。为了适应器件的资源，将这两个矩阵按需要分成多个维数为block_size的方阵，并计算Csub作为这些方阵的乘积之和。这些产品都是通过首先将两个对应的方阵从`global`存储器加载到共享存储器，由一个线程加载每个矩阵的一个元素，然后让每个线程计算产品的一个元素来完成的。每个线程将这些产品的结果累积到一个寄存器中，并在完成后将结果写入`global`内存。
 
-&emsp;&emsp;通过这种方式阻塞计算，我们利用了快速共享内存的优势，节省了大量的`global`内存带宽，因为A只从`global`内存读取(B.width/block_size)次数，而B是读取(A.height/block_size)次数。
+&emsp;&emsp;通过这种方式阻塞计算，我们利用了快速`shared memory`的优势，节省了大量的`global`内存带宽，因为A只从`global`内存读取(B.width/block_size)次数，而B是读取(A.height/block_size)次数。
 
-[代码示例](#code-3.12)中的Matrix类型通过一个步长字段进行了扩展，这样子矩阵就可以有效地用同一类型表示。函数用于获取和设置元素，并从矩阵中构建任意子矩阵。
+&emsp;&emsp;[代码示例](#code-3.12)中的Matrix类型通过一个步长字段进行了扩展，这样子矩阵就可以有效地用同一类型表示。函数用于获取和设置元素，并从矩阵中构建任意子矩阵。
 
 <span id="code-3.12"></span>
 
@@ -1102,6 +1102,8 @@ typedef struct {
     int stride;
     float* elements;
 } Matrix;
+// Thread block size
+#define BLOCK_SIZE 16
 // Get a matrix element
 __device__ float GetElement(const Matrix A, int row, int col)
 {
@@ -1124,8 +1126,6 @@ __device__ void SetElement(Matrix A, int row, int col, float value)
     Asub.elements = &A.elements[A.stride * BLOCK_SIZE * row + BLOCK_SIZE * col];
     return Asub;
 }
-// Thread block size
-#define BLOCK_SIZE 16
 // Forward declaration of the matrix multiplication kernel
 __global__ void MatMulKernel(const Matrix, const Matrix, Matrix);
 // Matrix multiplication - Host code
@@ -1216,23 +1216,207 @@ void MatMul(const Matrix A, const Matrix B, Matrix C)
     </center>
 </div>
 
-[共享内存的矩阵乘法](#picture-3.2)
+[`shared memory`的矩阵乘法](#picture-3.2)
 
 <span id="Title-3.2.5"></span>
 
-### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#distributed-shared-memory"> 3.2.5、分布式共享内存</a>
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#distributed-shared-memory"> 3.2.5、`distributed shared memory`</a>
+
+&emsp;&emsp;在计算能力9.0中引入的线程`block cluster`为线程`block cluster`中的线程提供了访问集群中所有参与`block cluster`的`shared memory`的能力。这种分区`shared memory`称为`distributed shared memory`，相应的地址空间称为`distributed shared memory`地址空间。属于线程`block cluster`的线程可以在分布式地址空间中读、写或执行原子操作，而不管地址属于本地线程`block`还是远程线程`block`。无论`kernel`是否使用`distributed shared memory`，静态或动态`shared memory`的大小规格仍然是每个线程`block`。`distributed shared memory`的大小就是每个`cluster`的线程`block`数乘以每个线程`block`的`shared memory`大小。
+
+&emsp;&emsp;访问`distributed shared memory`中的数据需要存在所有的线程`block`。用户可以使用 `cluster.sync()`从[集群组](#Title-8.4.1.2)API保证所有线程`block`已经开始执行。用户还需要确保所有的`distributed shared memory`操作都发生在线程`block`退出之前，例如，如果一个远程线程`block`试图读取给定线程`block`的`shared memory`，用户需要确保远程线程`block`读取的`shared memory`在退出之前已经完成。
+
+&emsp;&emsp;CUDA提供了一种访问`distributed shared memory`的机制，应用程序可以从其能力中受益。让我们看看一个简单的直方图计算，以及如何使用线程`block cluster`在GPU上优化它。计算直方图的一种标准方法是在每个线程`block`的`shared memory`中进行计算，然后执行`global`内存原子。这种方法的一个局限性是`shared memory`容量。一旦直方图箱不再适合`shared memory`，用户就需要直接计算直方图，从而计算`global`内存中的原子。对于`distributed shared memory`，CUDA提供了一个中间步骤，根据直方图箱的大小，直方图可以直接在`shared memory`、`distributed shared memory`或`global`内存中计算。
+
+&emsp;&emsp;[下面的CUDA`kernel`示例](#code-3.13)展示了如何根据直方图箱数计算`shared memory`或`distributed shared memory`中的直方图。
+
+<span id="code-3.12"></span>
+
+```C++
+#include <cooperative_groups.h>
+
+// Distributed Shared memory histogram kernel
+__global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_per_block, const int *__restrict__ input,
+                                   size_t array_size)
+{
+  extern __shared__ int smem[];
+  namespace cg = cooperative_groups;
+  int tid = cg::this_grid().thread_rank();
+
+  // Cluster initialization, size and calculating local bin offsets.
+  cg::cluster_group cluster = cg::this_cluster();
+  unsigned int clusterBlockRank = cluster.block_rank();
+  int cluster_size = cluster.dim_blocks().x;
+
+  for (int i = threadIdx.x; i < bins_per_block; i += blockDim.x)
+  {
+    smem[i] = 0; //Initialize shared memory histogram to zeros
+  }
+
+  // cluster synchronization ensures that shared memory is initialized to zero in
+  // all thread blocks in the cluster. It also ensures that all thread blocks
+  // have started executing and they exist concurrently.
+  cluster.sync();
+
+  for (int i = tid; i < array_size; i += blockDim.x * gridDim.x)
+  {
+    int ldata = input[i];
+
+    //Find the right histogram bin.
+    int binid = ldata;
+    if (ldata < 0)
+      binid = 0;
+    else if (ldata >= nbins)
+      binid = nbins - 1;
+
+    //Find destination block rank and offset for computing
+    //distributed shared memory histogram
+    int dst_block_rank = (int)(binid / bins_per_block);
+    int dst_offset = binid % bins_per_block;
+
+    //Pointer to target block shared memory
+    int *dst_smem = cluster.map_shared_rank(smem, dst_block_rank);
+
+    //Perform atomic update of the histogram bin
+    atomicAdd(dst_smem + dst_offset, 1);
+  }
+
+  // cluster synchronization is required to ensure all distributed shared
+  // memory operations are completed and no thread block exits while
+  // other thread blocks are still accessing distributed shared memory
+  cluster.sync();
+
+  // Perform global memory histogram, using the local distributed memory histogram
+  int *lbins = bins + cluster.block_rank() * bins_per_block;
+  for (int i = threadIdx.x; i < bins_per_block; i += blockDim.x)
+  {
+    atomicAdd(&lbins[i], smem[i]);
+  }
+}
+```
+
+&emsp;&emsp;上面的`kernel`可以在`runtime`启动，`cluster`大小取决于所需的`distributed shared memory`数量。如果直方图足够小，只能容纳一个`block`的`shared memory`，那么用户可以启动`cluster`大小为1的`kernel`。[下面的代码示例](#code-3.13)显示了如何根据`shared memory`需求动态启动`cluster kernel`。
+
+<span id="code-3.13"></span>
+
+```C++
+// Launch via extensible launch
+{
+  cudaLaunchConfig_t config = {0};
+  config.gridDim = array_size / threads_per_block;
+  config.blockDim = threads_per_block;
+
+  // cluster_size depends on the histogram size.
+  // ( cluster_size == 1 ) implies no distributed shared memory, just thread block local shared memory
+  int cluster_size = 2; // size 2 is an example here
+  int nbins_per_block = nbins / cluster_size;
+
+  //dynamic shared memory size is per block.
+  //Distributed shared memory size =  cluster_size * nbins_per_block * sizeof(int)
+  config.dynamicSmemBytes = nbins_per_block * sizeof(int);
+
+  CUDA_CHECK(::cudaFuncSetAttribute((void *)clusterHist_kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, config.dynamicSmemBytes));
+
+  cudaLaunchAttribute attribute[1];
+  attribute[0].id = cudaLaunchAttributeClusterDimension;
+  attribute[0].val.clusterDim.x = cluster_size;
+  attribute[0].val.clusterDim.y = 1;
+  attribute[0].val.clusterDim.z = 1;
+
+  config.numAttrs = 1;
+  config.attrs = attribute;
+
+  cudaLaunchKernelEx(&config, clusterHist_kernel, bins, nbins, nbins_per_block, input, array_size);
+}
+```
 
 <span id="Title-3.2.6"></span>
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#page-locked-host-memory"> 3.2.6、页面锁定`host`内存</a>
 
+&emsp;&emsp;`runtime`提供的函数允许使用页面锁定(也称为`pinned`)`host`内存(与 `malloc()`分配的常规分页`host`内存不同)：
+* `cudaHostAlloc()`和`CudaFreeHost()`分配和释放锁定页面的`host`内存;
+* `cudaHostRegister()`页面锁定`malloc()`分配的内存范围(有关限制，请参阅参考手册)。
+
+&emsp;&emsp;使用锁页`host`内存有几个好处:
+* 对于[异步并发执行](#Title-3.2.8)中提到的某些`device`，页锁定的`host`内存和`device`内存之间的副本可以与`kernel`并发执行。
+* 在某些`device`上，页锁定的`host`内存可以映射到`device`的地址空间，从而不需要像映射内存中详细说明的那样将其复制到`device`内存或从`device`内存中复制。
+* 在具有前端总线的系统上，如果`host`内存被分配为页锁定，那么`host`内存和`device`内存之间的带宽会更高，如果另外按写-组合内存中描述的那样，`host`内存被分配为写-组合内存，那么带宽会更高。
+
+> __注意__
+> 非I/O相干`Tegra` `device`上不缓存锁页`host`内存。另外，在非I/O相干`Tegra` `device`上不支持`cudaHostRegister()`。
+
+&emsp;&emsp;简单的零拷贝CUDA示例提供了关于页锁内存API的详细文档。
+
+<span id="Title-3.2.6.1"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#portable-memory"> 3.2.6.1、便携式存储器</a>
+
+&emsp;&emsp;一块页面锁定内存可以与系统中的任何`device`结合使用(更多关于多`device`系统的详细信息，请参阅[多设备系统](#Title-3.2.9))，但默认情况下，使用上述页面锁定内存的好处只能与分配该`blcok`时当前的`device`结合使用(以及所有`device`共享相同的统一地址空间，如果有的话，如[统一虚拟地址空间](#Title-3.2.10)所述)。为了让所有`device`都能获得这些优势，需要通过将标志 `cudaHostAllocPortable`传递给`cudaHostAlloc()`来分配`block`，或者通过将标志 `cudaHostRegisterPortable`传递给`cudaHostRegister()`来锁定页面。
+
+<span id="Title-3.2.6.2"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#write-combining-memory"> 3.2.6.2、`write-combining`内存</a>
+
+&emsp;&emsp;默认情况下，页锁定`host`内存是作为可缓存分配的。可以选择将其分配为`write-combining`，而不是通过将标志`cudaHostAllocWriteComposite`传递给`cudaHostAlloc()`。写组合内存释放`host`的L1和L2缓存资源，使更多的缓存可用于应用程序的其余部分。此外，在跨`PCI Express`总线的传输过程中，`write-combining`内存不会被窥探，这可以提高高达40%的传输性能。
+
+&emsp;&emsp;从`host`读取`write-combining`内存的速度慢得令人望而却步，因此`write-combining`内存通常应该用于`host`只写入的内存。
+
+&emsp;&emsp;应该避免在`write-combining`内存上使用CPU原子指令，因为并非所有CPU实现都保证了这一功能。
+
+<span id="Title-3.2.6.3"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#mapped-memory"> 3.2.6.3、`mapped-memory`</a>
+
+&emsp;&emsp;页锁定`host`内存还可以通过将标志`cudaHostAllocMated`传递给`cudaHostAlloc()`，或者将标志`cudaHostRegisterMated`传递给`cudaHostRegister()`映射到`device`的地址空间。因此，这样的`block`通常有两个地址：一个位于由`cudaHostAlloc()`或`malloc()`返回的`host`内存中，另一个位于可以使用`cudaHostGetDevicePointer()`检索的`device`内存中，然后用于从`kernel`中访问`block`。唯一的例外是分配给`cudaHostAlloc()`的指针，以及在[统一虚拟地址空间](#Title-3.2.10)中提到的为`host`和`device`使用统一地址空间时。
+
+&emsp;&emsp;直接从`kernel`访问`host`内存不会提供与`device`内存相同的带宽，但是有一些优点:
+* 没有必要在`device`内存中分配一个`block`，并在这个`block`和`host`内存中的`block`之间复制数据; 数据传输是根据`kernel`的需要隐式执行的;
+* 不需要使用流(请参阅[并发数据传输](#Title-3.2.8.4))将数据传输与`kernel`执行重叠; 源自`kernel`的数据传输将自动与`kernel`执行重叠。
+
+&emsp;&emsp;由于映射的锁页内存是在`host`和`device`之间共享的，因此应用程序必须使用流或事件(参见[异步并发执行](#Title-3.2.8))来同步内存访问，以避免任何潜在的写后读、写后读或写后写危险。
+
+&emsp;&emsp;为了能够检索到任何映射的页面锁定内存的`device`指针，在执行任何其他CUDA调用之前，必须通过使用`cudaDeviceMapHost`标志调用`cudaSetDeviceFlags()`来启用页面锁定内存映射。否则，`cudaHostGetDevicePointer()`将返回错误。
+
+&emsp;&emsp;如果`device`不支持映射的页锁定`host`内存，`cudaHostGetDevicePointer()`也会返回一个错误。应用程序可以通过检查`canMapHostMemory` `device`属性(请参阅[设备枚举](#Title-3.2.9.1))来查询此功能，对于支持映射的页锁定`host`内存的设备，该属性等于1。
+
+&emsp;&emsp;请注意，从`host`或其他`device`的角度来看，在映射的页锁定内存上操作的原子函数(请参见[原子函数](#Title-7.14))不是原子函数。
+
+&emsp;&emsp;还要注意的是，从`host`和其他`device`单一访问的角度来看，CUDA`runtime`要求从`device`启动的1字节、2字节、4字节和8字节自动对齐，加载和存储到从`device`启动的`host`内存保存完好。在某些平台上，硬件可能会将内存的原子分解为单独的加载和存储操作。这些组件加载和存储操作对于保存自动对齐的访问具有相同的要求。例如，CUDA`runtime`不支持`PCI Express`总线拓扑，其中`PCI Express`桥将8字节的自动对齐写入分成`device`和`host`之间的两个4字节写入。
+
+<span id="Title-3.2.7"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#memory-synchronization-domains"> 3.2.7、内存同步域</a>
+
+<span id="Title-3.2.7.1"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#memory-fence-interference"> 3.2.7.1、内存栅栏干扰</a>
+
+<span id="Title-3.2.7.2"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#isolating-traffic-with-domains"> 3.2.7.2、用域隔离流量</a>
+
+<span id="Title-3.2.7.2"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#using-domains-in-cuda"> 3.2.7.3、在 CUDA 中使用域</a>
+
 <span id="Title-3.2.8"></span>
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#asynchronous-concurrent-execution"> 3.2.8、异步并发执行</a>
 
+<span id="Title-3.2.8.4"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-data-transfers"> 3.2.8.4、并发数据传输</a>
+
+
+
 <span id="Title-3.2.9"></span>
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#multi-device-system"> 3.2.9、多`device`系统</a>
+
+<span id="Title-3.2.9.1"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-enumeration"> 3.2.9.1、设备枚举</a>
 
 <span id="Title-3.2.9.2"></span>
 
@@ -1282,6 +1466,10 @@ void MatMul(const Matrix A, const Matrix B, Matrix C)
 
 ## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#variable-memory-space-specifiers"> 7.2、可变内存空间说明符</a>
 
+<span id="Title-7.14"></span>
+
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomic-functions"> 7.14、原子函数</a>
+
 <span id="Title-7.26"></span>
 
 ## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#aw-barrier"> 7.26、异步屏障</a>
@@ -1297,6 +1485,10 @@ void MatMul(const Matrix A, const Matrix B, Matrix C)
 <span id="Title-8"></span>
 
 # <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cooperative-groups"> 8、协作组</a>
+
+<span id="Title-8.4.1.2"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cluster-group"> 8.4.1.2、集群组</a>
 
 <span id="Title-9"></span>
 
