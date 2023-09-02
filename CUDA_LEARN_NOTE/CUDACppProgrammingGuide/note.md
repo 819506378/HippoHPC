@@ -70,11 +70,11 @@ CUDA模块和接口开发文档 V12.2
 
 ## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#a-scalable-programming-model"> 1.3、 CUDA®:一个通用并行计算平台和编程模型</a>
 
-&emsp;&emsp;多核cpu和多核gpu的出现意味着主流处理器芯片现在是并行系统。当前的挑战是开发能够透明地扩展其并行性的应用软件，以利用不断增加的处理器核数，就像3D图形应用程序能够透明地将其并行性扩展到具有不同核数的众核gpu一样。 
+&emsp;&emsp;多核cpu和多核gpu的出现意味着主流处理器芯片现在是并行系统。当前的挑战是开发能够透明地扩展其并行性的应用软件，以利用不断增加的处理器核数，就像3D图形应用程序能够透明地将其并行性扩展到具有不同核数的众核gpu一样。
 &emsp;&emsp;CUDA并行编程模型旨在克服这一挑战，同时对熟悉C等标准编程语言的程序员保持较低的学习曲线。
 其核心是三个关键的抽象——线程组的层次结构、共享内存和同步屏障——它们只是作为最小的语言扩展集暴露给程序员。
 &emsp;&emsp;这些抽象提供细粒度的数据并行性和线程并行性，嵌套在粗粒度的数据并行性和任务并行性中。它们指导程序员将问题划分为可由线程块独立并行求解的粗粒度子问题，以及可由线程块内所有线程协同并行求解的细粒度子问题。
-&emsp;&emsp;这种分解允许线程在解决每个子问题时进行协作，从而保持了语言的表达能力，同时允许自动扩展。 实际上，每个线程块都可以以任意顺序(并发或顺序)在GPU内的任何可用多处理器上调度，因此编译后的CUDA程序可以在任意数量的多处理器上执行，如[图1.3](#picture-1.3)所示，只有运行时系统需要知道物理多处理器数量。
+&emsp;&emsp;这种分解允许线程在解决每个子问题时进行协作，从而保持了语言的表达能力，同时允许自动扩展。 实际上，每个线程块都可以以任意顺序(并发或顺序)在GPU内的任何可用多处理器上调度，因此编译后的CUDA程序可以在任意数量的多处理器上执行，如[图1.3](#picture-1.3)所示，只有`runtime`系统需要知道物理多处理器数量。
 &emsp;&emsp;这种可扩展的编程模型允许GPU架构通过简单地扩展多处理器和内存分区的数量来跨越广泛的市场范围:从高性能爱好者GeForce GPU和专业Quadro和Tesla计算产品到各种廉价的主流GeForce GPU(有关所有cuda支持的GPU的列表，请参阅[支持CUDA的gpu](#Title-6))。
 
 <span id="picture-1.3"></span>
@@ -111,7 +111,7 @@ CUDA模块和接口开发文档 V12.2
 [13、数学方法](#Title-13)列举了CUDA支持的数学方法。
 [14、C++语言支持](#Title-14)列举了device端支持的C++特性。
 [15、纹理方法](#Title-15)给出了纹理方法更多的细节。
-[16、计算能力](#Title-16)给出了各种设备的技术规格，以及更多的架构细节。
+[16、计算能力](#Title-16)给出了各种`device`的技术规格，以及更多的架构细节。
 [17、Driver API](#Title-17)介绍了低等级的driver API。
 [18、CUDA 环境变量](#Title-18)列举了所有的CUDA环境变量。
 [19、统一存储编程](#Title-19)介绍了统一内存编程指导。
@@ -239,7 +239,7 @@ int main()
 
 &emsp;&emsp;线程`block`需要独立执行：必须能够以任意顺序执行它们，并行或串行。这种独立性要求允许线程`block`在任意数量的核心上按任意顺序进行调度，如[图1.3](#picture-1.3)所示，使程序员能够编写与核数量相关的代码。
 
-&emsp;&emsp;同一个`block`中的线程可以通过共享内存共享数据，并通过同步它们的执行来协调内存访问。更准确地说，可以在内核中调用`__syncthreads()`内部函数来指定同步的地方。`__syncthreads()`就像一个屏障，`block`中的所有线程都必须等待，然后才允许继续执行。[共享内存](#Title-3.2.4)给出了一个使用共享内存的例子。除了`__syncthreads()`之外，[协作组API](#Title-8)还提供了一组丰富的线程同步原语。
+&emsp;&emsp;同一个`block`中的线程可以通过共享内存共享数据，并通过同步它们的执行来协调内存访问。更准确地说，可以在`kernel`中调用`__syncthreads()`内部函数来指定同步的地方。`__syncthreads()`就像一个屏障，`block`中的所有线程都必须等待，然后才允许继续执行。[共享内存](#Title-3.2.4)给出了一个使用共享内存的例子。除了`__syncthreads()`之外，[协作组API](#Title-8)还提供了一组丰富的线程同步原语。
 
 &emsp;&emsp;为了高效合作，共享内存应该是靠近每个处理器核心的低延迟内存(很像L1缓存)，`__syncthreads()`应该是轻量级的。
 
@@ -268,7 +268,7 @@ int main()
 > **注意**
 > 在使用`cluster`支持启动的`kernel`中，出于兼容性的考虑，gridDim变量仍然以线程`block`的数量表示大小。可以使用cluster Group API找到`cluster`中块的下标。
 
-&emsp;&emsp;线程`block` `cluster`可以在`kernel`中启用，使用`__cluster_dims__(X,Y,Z)`来使用编译器时间`kernel`属性，或使用CUDA`kernel`启动`cudaLaunchKernelEx`。[示例代码](#code-2.4)展示了如何使用编译器时间内核属性启动`cluster`。使用kernel属性的`cluster`大小在编译时是固定的，然后`kernel`可以使用经典的`<<<...>>>`。如果`kernel`使用编译时`cluster`大小，则在启动`kernel`时不能修改`cluster`大小。
+&emsp;&emsp;线程`block` `cluster`可以在`kernel`中启用，使用`__cluster_dims__(X,Y,Z)`来使用编译器时间`kernel`属性，或使用CUDA`kernel`启动`cudaLaunchKernelEx`。[示例代码](#code-2.4)展示了如何使用编译器时间`kernel`属性启动`cluster`。使用kernel属性的`cluster`大小在编译时是固定的，然后`kernel`可以使用经典的`<<<...>>>`。如果`kernel`使用编译时`cluster`大小，则在启动`kernel`时不能修改`cluster`大小。
 
 <span id="code-2.4"></span>
 
@@ -294,7 +294,7 @@ int main()
 }
 ```
 
-线程`block` `cluster`大小也可以在运行时设置，`kernel`可以使用CUDA`kernel`启动API启动`cudaLaunchKernelEx`。[示例代码](#code-2.5)展示了如何使用可扩展API启动`cluster` `kernel`。
+线程`block` `cluster`大小也可以在`runtime`设置，`kernel`可以使用CUDA`kernel`启动API启动`cudaLaunchKernelEx`。[示例代码](#code-2.5)展示了如何使用可扩展API启动`cluster` `kernel`。
 
 <span id="code-2.5"></span>
 
@@ -343,7 +343,7 @@ int main()
 
 &emsp;&emsp;CUDA线程可以在执行期间访问多个内存空间中的数据，[如图](#picture-2.3)所示。每个线程都有私有的本地内存。每个线程`block`都有共享内存，对该`block`的所有线程可见，并且与该`block`具有相同的生存期。线程`block cluster`中的线程`block`可以对彼此的共享内存执行读、写和原子操作。所有线程都可以访问相同的全局内存。
 
-&emsp;&emsp;还有两个额外的只读内存空间可供所有线程访问：`constant`和`texture`内存空间。`global`、`constant`和`texture`内存空间针对不同用途的内存进行了优化(参见[设备内存访问](#Title-5.3.2))。`texture`内存还提供了不同的寻址方式，以及一些特定数据格式的数据过滤(参见[`texture`和`surface`内存](#Title-3.2.14))。
+&emsp;&emsp;还有两个额外的只读内存空间可供所有线程访问：`constant`和`texture`内存空间。`global`、`constant`和`texture`内存空间针对不同用途的内存进行了优化(参见[`device`内存访问](#Title-5.3.2))。`texture`内存还提供了不同的寻址方式，以及一些特定数据格式的数据过滤(参见[`texture`和`surface`内存](#Title-3.2.14))。
 
 &emsp;&emsp;`global`、`constant`和`texture`内存空间始终贯穿应用启动的`kernel`。
 
@@ -363,11 +363,11 @@ int main()
 
 ## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#heterogeneous-programming"> 2.4、异构编程</a>
 
-&emsp;&emsp;[如图](#picture-2.4)所示，CUDA编程模型假设CUDA线程在物理上独立的设备上执行，该设备作为运行c++程序`host`的协同处理器运行。例如，当`kernels`在GPU上执行而c++程序的其余部分在CPU上执行时，就是这种情况。
+&emsp;&emsp;[如图](#picture-2.4)所示，CUDA编程模型假设CUDA线程在物理上独立的`device`上执行，该`device`作为运行c++程序`host`的协同处理器运行。例如，当`kernels`在GPU上执行而c++程序的其余部分在CPU上执行时，就是这种情况。
 
-&emsp;&emsp;CUDA编程模型还假设`host`和`device`在DRAM中保持各自独立的内存空间，分别称为`host memory`和`device memory`。因此，程序通过调用CUDA运行时(在[编程接口](#Title-3)中描述)来管理`kernel`可见的`global`、`constant`和`texture`内存空间。这包括设备内存分配和回收，以及`host memory`和`device memory`之间的数据传输。
+&emsp;&emsp;CUDA编程模型还假设`host`和`device`在DRAM中保持各自独立的内存空间，分别称为`host memory`和`device memory`。因此，程序通过调用CUDA`runtime`(在[编程接口](#Title-3)中描述)来管理`kernel`可见的`global`、`constant`和`texture`内存空间。这包括`device`内存分配和回收，以及`host memory`和`device memory`之间的数据传输。
 
-&emsp;&emsp;统一内存提供托管内存来连接`host memory`和`device memory`。托管内存作为具有公共地址空间的单个连贯内存映像，系统中的所有cpu和gpu都可以访问。此功能允许超设备内存订阅，并且可以通过消除在`host`和`device`上显式镜像数据的需要，大大简化移植应用程序的任务。有关统一内存的介绍，请参阅[统一内存编程](#Title-19)。
+&emsp;&emsp;统一内存提供托管内存来连接`host memory`和`device memory`。托管内存作为具有公共地址空间的单个连贯内存映像，系统中的所有cpu和gpu都可以访问。此功能允许超`device`内存订阅，并且可以通过消除在`host`和`device`上显式镜像数据的需要，大大简化移植应用程序的任务。有关统一内存的介绍，请参阅[统一内存编程](#Title-19)。
 
 
 <span id="picture-2.4"></span>
@@ -383,13 +383,13 @@ int main()
 </div>
 
 > **注意**
-> 串行代码在主机上执行，并行代码在设备上执行。
+> 串行代码在`host`上执行，并行代码在`device`上执行。
 
 <span id="Title-2.5"></span>
 
 ## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#asynchronous-simt-programming-model"> 2.5、异步SIMT编程模型</a>
 
-&emsp;&emsp;在CUDA编程模型中，线程是执行计算或内存操作的最低抽象级别。从基于NVIDIA Ampere GPU架构的设备开始，CUDA编程模型通过异步编程模型为内存操作提供加速。
+&emsp;&emsp;在CUDA编程模型中，线程是执行计算或内存操作的最低抽象级别。从基于NVIDIA Ampere GPU架构的`device`开始，CUDA编程模型通过异步编程模型为内存操作提供加速。
 
 &emsp;&emsp;异步编程模型为CUDA线程之间的同步定义了[异步屏障](#Title-7.26)的行为。该模型还解释并定义了[cuda::memcpy_async](#Title-7.27)如何用于在GPU计算时从全局内存中异步移动数据。
 
@@ -442,17 +442,17 @@ int main()
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capability"> 2.6、计算能力</a>
 
-&emsp;&emsp;设备的计算能力由版本号表示，有时也称为它的"SM版本"。版本号标识GPU硬件支持的特性，应用程序在运行时用来确定当前GPU上有哪些硬件特性、指令可用。
+&emsp;&emsp;`device`的计算能力由版本号表示，有时也称为它的"SM版本"。版本号标识GPU硬件支持的特性，应用程序在`runtime`用来确定当前GPU上有哪些硬件特性、指令可用。
 
 &emsp;&emsp;计算能力由主修订号X和次修订号Y组成，用x.y表示。
 
-&emsp;&emsp;相同主修订号的设备核心架构相同。主修订号为9，基于`NVIDIA Hopper GPU`架构；8，基于`NVIDIA Ampere GPU`架构；7，基于`Volta`架构；6，基于`Maxwell`架构；5，基于`Maxwell`架构；3，基于`Kepler`架构。
+&emsp;&emsp;相同主修订号的`device`核心架构相同。主修订号为9，基于`NVIDIA Hopper GPU`架构；8，基于`NVIDIA Ampere GPU`架构；7，基于`Volta`架构；6，基于`Maxwell`架构；5，基于`Maxwell`架构；3，基于`Kepler`架构。
 
 &emsp;&emsp;次要修订号对应于对核心体系结构的增量改进，可能包括新特性。
 
-&emsp;&emsp;`Turing`是用于计算能力为7.5的设备的架构，是基于`Volta`架构的增量更新。
+&emsp;&emsp;`Turing`是用于计算能力为7.5的`device`的架构，是基于`Volta`架构的增量更新。
 
-&emsp;&emsp;[支持CUDA的GPU](#Title-6)列举了所有CUDA支持的设备及计算能力。[计算能力](#Title-16)给出了每种计算能力的技术说明。
+&emsp;&emsp;[支持CUDA的GPU](#Title-6)列举了所有CUDA支持的`device`及计算能力。[计算能力](#Title-16)给出了每种计算能力的技术说明。
 
 > __注意__
 > 特定GPU的计算能力版本不应与CUDA版本(例如，CUDA 7.5, CUDA 8, CUDA 9)混淆，CUDA版本是CUDA软件平台的版本。CUDA平台被应用程序开发人员用来创建在多代GPU架构上运行的应用程序，包括未来有待发明的GPU架构。虽然CUDA平台的新版本通常通过支持新的图形处理器架构的计算能力版本来增加对新的图形处理器架构的本地支持，但 CUDA 平台的新版本通常也包括独立于硬件生成的软件特性。
@@ -465,11 +465,11 @@ int main()
 
 &emsp;&emsp;CUDA C++为熟悉C++编程语言的用户提供了一个简单的路径，可以轻松编写供`device`执行的程序。
 
-&emsp;&emsp;它由C++语言的最小扩展集和运行时库组成。
+&emsp;&emsp;它由C++语言的最小扩展集和`runtime`库组成。
 
 &emsp;&emsp;在[编程模型](#Title-2)中引入了核心语言扩展。开发人员定义C++函数就像一样定义`kernel`，并在每次调用时使用一些新的语法来指定`grid`和`block`。所有扩展的完整描述可以在[C++语言扩展](#Title-7)中找到。任何包含这些扩展名的源文件都必须用`nvcc`编译，如[使用nvcc编译](#Title-3.1)所述。
 
-&emsp;&emsp;在[CUDA运行](#Title-3.2)时中引入了`runtime`。`runtime`提供了在`host`上执行的C和C++函数来分配和释放设备内存，在`host`内存和`device`内存之间传输数据，管理具有多个`device`的系统等。`runtime`的完整描述可以在CUDA参考手册中找到。
+&emsp;&emsp;在[CUDA运行](#Title-3.2)时中引入了`runtime`。`runtime`提供了在`host`上执行的C和C++函数来分配和释放`device`内存，在`host`内存和`device`内存之间传输数据，管理具有多个`device`的系统等。`runtime`的完整描述可以在CUDA参考手册中找到。
 
 &emsp;&emsp;`runtime`建立在一个较低级别的C API, `CUDA driver` API之上，`runtime`也可以被应用程序访问。`CUDA driver` API通过暴露底层概念提供了额外的控制级别，如CUDA `contexts`(模拟`device`的`host`进程)和CUDA 模块(模拟`device`动态加载库)。大多数应用程序不使用`CUDA driver`API，因为它们不需要这种额外的控制级别，并且在使用`runtime`，`context`和`module`管理是隐式的，从而产生更简洁的代码。由于`runtime`可与`CUDA driver`API互操作，因此大多数需要某些`driver`API特性的应用程序可以默认使用`runtime`API，并且仅在需要时使用`driver`API。`driver`API在[Driver API](#Title-17)中介绍，并在参考手册中进行了详细描述。
 
@@ -552,7 +552,7 @@ nvcc x.cu
 * 具有7.0和7.5计算能力的`device`的7.0二进制代码
 * 具有8.0和8.6计算能力的`device`的编译成`runtime`二进制代码`PTX`代码
 
-&emsp;&emsp;`x.cu`文件有一个优化代码的路径，它使用`warp`减少操作。例如，只支持在8.0或更高计算能力的设备。`__CUDA_ARCH__`宏可用于根据计算能力区分各种代码路径。`__CUDA_ARCH__`只定义了`device`代码。例如，当使用`-arch=compute_80`编译时，`__CUDA_ARCH__`等于800。
+&emsp;&emsp;`x.cu`文件有一个优化代码的路径，它使用`warp`减少操作。例如，只支持在8.0或更高计算能力的`device`。`__CUDA_ARCH__`宏可用于根据计算能力区分各种代码路径。`__CUDA_ARCH__`只定义了`device`代码。例如，当使用`-arch=compute_80`编译时，`__CUDA_ARCH__`等于800。
 
 &emsp;&emsp;使用`driver`API的应用程序必须分离文件来编译代码，并且在`runtime`显示加载和执行最合适的文件。
 
@@ -574,7 +574,7 @@ nvcc x.cu
 
 <span id="Title-3.2"></span>
 
-## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-runtime"> 3.2、CUDA 运行时</a>
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-runtime"> 3.2、CUDA `runtime`</a>
 
 &emsp;&emsp;`runtime`是在`cudart`库中实现的，通过`cudart.lib`或者`libcudart.a`静态链接到应用，或通过`cudart.dll`或`libcudart.so`动态链接到应用。对于动态链接来说，需要 cutart.dll 和/或 cutart.so 的应用程序通常将它们作为应用程序安装包的一部分。只有在链接到相同CUDA`runtime`实例的组件之间传递CUDA`runtime`符号的地址才是安全的。
 
@@ -610,16 +610,16 @@ nvcc x.cu
 
 > __注意__
 > CUDA接口使用全局状态，在`host`程序启动期间初始化，在`host`程序终止期间销毁。CUDA`runtime`和`driver`程序无法检测此状态是否无效，因此在程序启动或main后终止期间使用任何这些接口(隐式或显式)将导致未定义的行为。
-> 
+>
 > 从CUDA 12.0开始，`cudaSetDevice()`会在更改当前`device`的`host`线程后显示初始化`runtime`。之前的CUDA延迟了新`device` `runtime`初始化，直到`cudaSetDevice()`之后进行第一次`runtime`调用。此更改意味着现在检查`cudaSetDevice()`的初始化错误很重要。
-> 
+>
 > 参考手册中的错误处理和版本管理部分中的`runtime`函数不会初始化`runtime`。
 
 <span id="Title-3.2.2"></span>
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory"> 3.2.2、`device`内存</a>
 
-&emsp;&emsp;正如[异构编程](#Title-2.4)中提到的，CUDA编程模型假设一个由`host`和`device`组成的系统，每个`host`和`device`都有自己独立的内存。`kernel`在设备内存之外运行，因此`runtime`提供了分配、释放和复制`device`内存的函数，以及在`host`内存和`device`内存之间传输数据。
+&emsp;&emsp;正如[异构编程](#Title-2.4)中提到的，CUDA编程模型假设一个由`host`和`device`组成的系统，每个`host`和`device`都有自己独立的内存。`kernel`在`device`内存之外运行，因此`runtime`提供了分配、释放和复制`device`内存的函数，以及在`host`内存和`device`内存之间传输数据。
 
 &emsp;&emsp;`device`内存可以分配为线性内存或CUDA arrays。
 
@@ -789,7 +789,7 @@ __global__ void MyKernel(cudaPitchedPtr devPitchedPtr, int width, int height, in
 
 &emsp;&emsp;参考手册列出了所有用于复制线性内存之间的内存的各种函数，用 `cudaMallocPitch()`分配的线性内存，用 `cudaMallocPitch()`或`cudaMalloc3D()`分配的线性内存，CUDA `arrays`以及在`global`或`constant`内存空间声明的变量分配的内存。
 
-&emsp;&emsp;代码示例说明了通过运行时 API 访问全局变量的各种方法:
+&emsp;&emsp;代码示例说明了通过`runtime` API 访问全局变量的各种方法:
 
 <span id="code-3.5"></span>
 
@@ -825,7 +825,7 @@ cudaMemcpyToSymbol(devPointer, &ptr, sizeof(ptr));
 
 &emsp;&emsp;L2缓存的一部分可以预留出来，用于对`global`内存进行持久化数据访问。持久化访问优先使用这个L2缓存的预留部分，而对`global`内存的正常或流式访问只能在持久化访问未使用时使用L2的这一部分。
 
-&emsp;&emsp;用于持久访问的 L2缓存预留大小可以在限制范围内进行调整:
+&emsp;&emsp;用于持久访问的L2缓存预留大小可以在限制范围内进行调整:
 
 <span id="code-3.6"></span>
 
@@ -866,11 +866,11 @@ cudaStreamSetAttribute(stream, cudaStreamAttributeAccessPolicyWindow, &stream_at
 
 &emsp;&emsp;当`kernel`随后在CUDA流中执行时，访问`global`内存范围`[ptr..ptr+num_bytes)`比访问其他`global`内存位置更有可能持久存储在L2缓存中。
 
-&emsp;&emsp;L2持久性也可以为CUDA`gragh kernel node`设置，如[代码示例](#code-3.8)所示
+&emsp;&emsp;L2持久性也可以为CUDA`gragh kernel node`设置，如[代码示例](#code-3.9)所示
 
 __CUDA GraphKernelNode Example__
 
-<span id="code-3.8"></span>
+<span id="code-3.9"></span>
 
 ```C++
 cudaKernelNodeAttrValue node_attribute;                                     // Kernel level attributes data structure
@@ -893,38 +893,330 @@ cudaGraphKernelNodeSetAttribute(node, cudaKernelNodeAttributeAccessPolicyWindow,
 
 &emsp;&emsp;因此，可以使用`hitRatio`来避免缓存线路的颠簸，并总体上减少进出L2缓存的数据量。
 
-&emsp;&emsp;`hitRatio`值低于1.0可以用来手动控制数据量不同的`accessPolicyWindow`从并发CUDA流可以缓存在 L2。例如，设置L2的预留缓存大小为16KB; 两个不同CUDA流中的两个并发`kernel`，每个都有16KB的`accessPolicyWindow`，并且都有`hitRatio`值1.0，可能会在竞争共享L2资源时排除对方的缓存线。
+&emsp;&emsp;`hitRatio`值低于1.0可以用来手动控制数据量不同的`accessPolicyWindow`从并发CUDA流可以缓存在L2。例如，设置L2的预留缓存大小为16KB; 两个不同CUDA流中的两个并发`kernel`，每个都有16KB的`accessPolicyWindow`，并且都有`hitRatio`值1.0，可能会在竞争共享L2资源时排除对方的缓存线。
 
 <span id="Title-3.2.3.3"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#l2-access-properties"> 3.2.3.3、L2访问属性</a>
 
 &emsp;&emsp;为不同的`global`内存数据访问定义了三种类型的访问属性:
-
+* `cudaAccessPropertyStreaming`：使用流属性发生的内存访问不太可能在L2缓存中持久存在，因为这些访问被优先驱逐。
+* `cudaAccessPropertyPersisting`：使用持久化属性发生的内存访问更有可能在L2缓存中持久化，因为这些访问优先保留在L2缓存的预留部分中。
+* `cudaAccessPropertyNormal`：此访问属性强制将先前应用的持久访问属性重置为正常状态。具有先前CUDA`kernel`持久化属性的内存访问可能在预期使用后很长时间内保留在L2缓存中。这种使用后持久化减少了不使用持久化属性的后续`kernel`可用的L2缓存的数量。重置访问属性窗口时，使用 `cudaAccessPropertyNormal`属性可以删除先前访问的持久(优先保留)状态，就好像先前的访问没有访问属性一样。
 
 <span id="Title-3.2.3.4"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#l2-persistence-example"> 3.2.3.4、L2持久性示例</a>
 
+&emsp;&emsp;[代码示例](#code-3.8)演示如何为持久访问设置备用L2缓存，通过CUDA流使用CUDA`kernel`中的备用L2缓存，然后重置L2缓存。
+
+<span id="code-3.8"></span>
+
+```C++
+cudaStream_t stream;
+cudaStreamCreate(&stream);                                                                  // Create CUDA stream
+
+cudaDeviceProp prop;                                                                        // CUDA device properties variable
+cudaGetDeviceProperties( &prop, device_id);                                                 // Query GPU properties
+size_t size = min( int(prop.l2CacheSize * 0.75) , prop.persistingL2CacheMaxSize );
+cudaDeviceSetLimit( cudaLimitPersistingL2CacheSize, size);                                  // set-aside 3/4 of L2 cache for persisting accesses or the max allowed
+
+size_t window_size = min(prop.accessPolicyMaxWindowSize, num_bytes);                        // Select minimum of user defined num_bytes and max window size.
+
+cudaStreamAttrValue stream_attribute;                                                       // Stream level attributes data structure
+stream_attribute.accessPolicyWindow.base_ptr  = reinterpret_cast<void*>(data1);               // Global Memory data pointer
+stream_attribute.accessPolicyWindow.num_bytes = window_size;                                // Number of bytes for persistence access
+stream_attribute.accessPolicyWindow.hitRatio  = 0.6;                                        // Hint for cache hit ratio
+stream_attribute.accessPolicyWindow.hitProp   = cudaAccessPropertyPersisting;               // Persistence Property
+stream_attribute.accessPolicyWindow.missProp  = cudaAccessPropertyStreaming;                // Type of access property on cache miss
+
+cudaStreamSetAttribute(stream, cudaStreamAttributeAccessPolicyWindow, &stream_attribute);   // Set the attributes to a CUDA Stream
+
+for(int i = 0; i < 10; i++)
+{
+    cuda_kernelA<<<grid_size,block_size,0,stream>>>(data1);                                 // This data1 is used by a kernel multiple times
+}                                                                                           // [data1 + num_bytes) benefits from L2 persistence
+cuda_kernelB<<<grid_size,block_size,0,stream>>>(data1);                                     // A different kernel in the same stream can also benefit
+                                                                                            // from the persistence of data1
+
+stream_attribute.accessPolicyWindow.num_bytes = 0;                                          // Setting the window size to 0 disable it
+cudaStreamSetAttribute(stream, cudaStreamAttributeAccessPolicyWindow, &stream_attribute);   // Overwrite the access policy attribute to a CUDA Stream
+cudaCtxResetPersistingL2Cache();                                                            // Remove any persistent lines in L2
+
+cuda_kernelC<<<grid_size,block_size,0,stream>>>(data2);                                     // data2 can now benefit from full L2 in normal mode
+```
+
 <span id="Title-3.2.3.5"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#reset-l2-access-to-normal"> 3.2.3.5、重置L2访问正常</a>
+
+&emsp;&emsp;来自以前CUDA`kernel`的持久化L2缓存行可能在使用后很长时间内持久化在L2中。因此，对于流式或普通内存访问来说，L2缓存的正常重置对于利用具有正常优先级的L2缓存非常重要。可以通过三种方式将持久访问重置为正常状态。
+* 使用 access 属性`cudaAccessPropertyNormal`设置以前的持久化内存区域。
+* 通过调用`cudaCtxResetPersisingL2Cache()`，将所有持久化L2缓存线路重置为正常。
+* 最终，未接触的线路会自动重置为正常。强烈建议不要依赖自动复位，因为自动复位发生所需的时间长度不确定。
 
 <span id="Title-3.2.3.6"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#manage-utilization-of-l2-set-aside-cache"> 3.2.3.6、管理L2预置缓存利用率</a>
 
+&emsp;&emsp;在不同CUDA流中并发执行的多个CUDA`kernel`可能有不同的访问策略窗口分配给它们的流。然而，L2预留缓存部分是在所有这些并发CUDA`kernel`之间共享的。因此，这个预留缓存部分的净利用率是所有并发`kernel`各自使用情况的总和。将内存访问指定为持久访问的好处会随着持久访问量超过预留的L2缓存容量而减少。
+
+&emsp;&emsp;为了管理预留L2缓存部分的使用，应用程序必须考虑以下几点:
+* L2预留缓存的大小。
+* 可并发执行的CUDA`kernel`。
+* 所有可能并发执行的CUDA`kernel`的访问策略窗口。
+* 为了允许正常访问或流访问以同等优先级利用先前预留的L2缓存，需要L2重置的时间和方式。
+
 <span id="Title-3.2.3.7"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#query-l2-cache-properties"> 3.2.3.7、查询L2缓存属性</a>
+
+&emsp;&emsp;与L2缓存相关的属性是`cudaDeviceProp`结构的一部分，可以使用CUDA`runtime` API`cudaGetDeviceProperties`进行查询。
+
+&emsp;&emsp;CUDA`device`属性包括:
+* `l2CacheSize`：GPU上可用的L2缓存量。
+* `persistingL2CacheMaxSize`：可以留出来用于持久化内存访问的L2缓存的最大数量。
+* `accessPolicyMaxWindowSize`：访问策略窗口的最大大小。
 
 <span id="Title-3.2.3.8"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#control-l2-cache-set-aside-size-for-persisting-memory-access"> 3.2.3.8、控制L2预置缓存大小来持久访问内存</a>
 
+&emsp;&emsp;用于持久内存访问的L2预留缓存大小使用CUDA`runtime`API`cudaDeviceGetlimit`进行查询，并使用CUDA`runtime`API`cudaDeviceSetlimit`作为`cudaLimit`进行设置。设置此限制的最大值是`cudaDeviceProp::eneringL2CacheMaxSize`。
+
+<span id="code-3.10"></span>
+
+```C++
+enum cudaLimit {
+    /* other fields not shown */
+    cudaLimitPersistingL2CacheSize
+};
+```
+
+
 <span id="Title-3.2.4"></span>
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory"> 3.2.4、共享内存</a>
+
+&emsp;&emsp;如[可变内存空间说明符](#Title-7.2)所详述的，共享内存是使用`__shared__`内存空间说明符分配的。共享内存预计将比[线程层次结构](#Title-2.2)中提到的`global`内存快得多，在[共享内存](#Title-3.2.4)中有详细说明。它可以用作暂存式记忆体缓存(或软件管理的缓存)，以减少来自 CUDA`block`的`global`内存访问，如下面的[矩阵乘法示例](#code-3.11)所示。
+
+&emsp;&emsp;下面的[代码示例](#code-3.11)是一个简单的矩阵乘法实现，它没有利用共享内存。每个线程读取一行A和一列B，并计算C的对应元素，[如图](#picture-3.1)所示。因此，从`global`内存中读取A是B的宽度时间，而B是读取A的高度时间。
+
+<span id="code-3.11"></span>
+
+```C++
+// Matrices are stored in row-major order:
+// M(row, col) = *(M.elements + row * M.width + col)
+typedef struct {
+    int width;
+    int height;
+    float* elements;
+} Matrix;
+
+// Thread block size
+#define BLOCK_SIZE 16
+
+// Forward declaration of the matrix multiplication kernel
+__global__ void MatMulKernel(const Matrix, const Matrix, Matrix);
+
+// Matrix multiplication - Host code
+// Matrix dimensions are assumed to be multiples of BLOCK_SIZE
+void MatMul(const Matrix A, const Matrix B, Matrix C)
+{
+    // Load A and B to device memory
+    Matrix d_A;
+    d_A.width = A.width; d_A.height = A.height;
+    size_t size = A.width * A.height * sizeof(float);
+    cudaMalloc(&d_A.elements, size);
+    cudaMemcpy(d_A.elements, A.elements, size,
+               cudaMemcpyHostToDevice);
+    Matrix d_B;
+    d_B.width = B.width; d_B.height = B.height;
+    size = B.width * B.height * sizeof(float);
+    cudaMalloc(&d_B.elements, size);
+    cudaMemcpy(d_B.elements, B.elements, size,
+               cudaMemcpyHostToDevice);
+
+    // Allocate C in device memory
+    Matrix d_C;
+    d_C.width = C.width; d_C.height = C.height;
+    size = C.width * C.height * sizeof(float);
+    cudaMalloc(&d_C.elements, size);
+
+    // Invoke kernel
+    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y);
+    MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C);
+
+    // Read C from device memory
+    cudaMemcpy(C.elements, d_C.elements, size,
+               cudaMemcpyDeviceToHost);
+
+    // Free device memory
+    cudaFree(d_A.elements);
+    cudaFree(d_B.elements);
+    cudaFree(d_C.elements);
+}
+
+// Matrix multiplication kernel called by MatMul()
+__global__ void MatMulKernel(Matrix A, Matrix B, Matrix C)
+{
+    // Each thread computes one element of C
+    // by accumulating results into Cvalue
+    float Cvalue = 0;
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    for (int e = 0; e < A.width; ++e)
+        Cvalue += A.elements[row * A.width + e]
+                * B.elements[e * B.width + col];
+    C.elements[row * C.width + col] = Cvalue;
+}
+```
+
+<span id="picture-3.1"></span>
+
+<div> <!--块级封装-->
+    <center> <!--将图片和文字居中-->
+    <img src="images/matrix-multiplication-without-shared-memory.png"
+         style="zoom:100%"/>
+    <br> <!--换行-->
+    </center>
+</div>
+
+&emsp;&emsp;[没有共享记忆的矩阵乘法](#picture-3.1)。
+
+&emsp;&emsp;下面的[代码示例](#code-3.12)是一个利用共享内存的矩阵乘法实现。在该实现中，每个线程块负责计算C的一个平方子矩阵Csub，每个线程`block`内的线程负责计算Csub的一个元素。[如图](#picture-3.2)所示，Csub等于两个矩阵的乘积：维度a的子矩阵(a宽，`block`大小)与Csub的行指数相同，维度b的子矩阵(`block`大小，a宽)与列指数相同。为了适应器件的资源，将这两个矩阵按需要分成多个维数为block_size的方阵，并计算Csub作为这些方阵的乘积之和。这些产品都是通过首先将两个对应的方阵从`global`存储器加载到共享存储器，由一个线程加载每个矩阵的一个元素，然后让每个线程计算产品的一个元素来完成的。每个线程将这些产品的结果累积到一个寄存器中，并在完成后将结果写入`global`内存。
+
+&emsp;&emsp;通过这种方式阻塞计算，我们利用了快速共享内存的优势，节省了大量的`global`内存带宽，因为A只从`global`内存读取(B.width/block_size)次数，而B是读取(A.height/block_size)次数。
+
+[代码示例](#code-3.12)中的Matrix类型通过一个步长字段进行了扩展，这样子矩阵就可以有效地用同一类型表示。函数用于获取和设置元素，并从矩阵中构建任意子矩阵。
+
+<span id="code-3.12"></span>
+
+```C++
+// Matrices are stored in row-major order:
+// M(row, col) = *(M.elements + row * M.stride + col)
+typedef struct {
+    int width;
+    int height;
+    int stride;
+    float* elements;
+} Matrix;
+// Get a matrix element
+__device__ float GetElement(const Matrix A, int row, int col)
+{
+    return A.elements[row * A.stride + col];
+}
+// Set a matrix element
+__device__ void SetElement(Matrix A, int row, int col, float value)
+{
+    A.elements[row * A.stride + col] = value;
+}
+// Get the BLOCK_SIZExBLOCK_SIZE sub-matrix Asub of A that is
+// located col sub-matrices to the right and row sub-matrices down
+// from the upper-left corner of A
+ __device__ Matrix GetSubMatrix(Matrix A, int row, int col)
+{
+    Matrix Asub;
+    Asub.width    = BLOCK_SIZE;
+    Asub.height   = BLOCK_SIZE;
+    Asub.stride   = A.stride;
+    Asub.elements = &A.elements[A.stride * BLOCK_SIZE * row + BLOCK_SIZE * col];
+    return Asub;
+}
+// Thread block size
+#define BLOCK_SIZE 16
+// Forward declaration of the matrix multiplication kernel
+__global__ void MatMulKernel(const Matrix, const Matrix, Matrix);
+// Matrix multiplication - Host code
+// Matrix dimensions are assumed to be multiples of BLOCK_SIZE
+void MatMul(const Matrix A, const Matrix B, Matrix C)
+{
+    // Load A and B to device memory
+    Matrix d_A;
+    d_A.width = d_A.stride = A.width; d_A.height = A.height;
+    size_t size = A.width * A.height * sizeof(float);
+    cudaMalloc(&d_A.elements, size);
+    cudaMemcpy(d_A.elements, A.elements, size, cudaMemcpyHostToDevice);
+    Matrix d_B;
+    d_B.width = d_B.stride = B.width; d_B.height = B.height;
+    size = B.width * B.height * sizeof(float);
+    cudaMalloc(&d_B.elements, size);
+    cudaMemcpy(d_B.elements, B.elements, size, cudaMemcpyHostToDevice);
+    // Allocate C in device memory
+    Matrix d_C;
+    d_C.width = d_C.stride = C.width; d_C.height = C.height;
+    size = C.width * C.height * sizeof(float);
+    cudaMalloc(&d_C.elements, size);
+    // Invoke kernel
+    dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
+    dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y);
+    MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C);
+    // Read C from device memory
+    cudaMemcpy(C.elements, d_C.elements, size, cudaMemcpyDeviceToHost);
+    // Free device memory
+    cudaFree(d_A.elements);
+    cudaFree(d_B.elements);
+    cudaFree(d_C.elements);
+}
+// Matrix multiplication kernel called by MatMul()
+ __global__ void MatMulKernel(Matrix A, Matrix B, Matrix C)
+{
+    // Block row and column
+    int blockRow = blockIdx.y;
+    int blockCol = blockIdx.x;
+    // Each thread block computes one sub-matrix Csub of C
+    Matrix Csub = GetSubMatrix(C, blockRow, blockCol);
+    // Each thread computes one element of Csub
+    // by accumulating results into Cvalue
+    float Cvalue = 0;
+    // Thread row and column within Csub
+    int row = threadIdx.y;
+    int col = threadIdx.x;
+    // Loop over all the sub-matrices of A and B that are
+    // required to compute Csub
+    // Multiply each pair of sub-matrices together
+    // and accumulate the results
+    for (int m = 0; m < (A.width / BLOCK_SIZE); ++m) {
+        // Get sub-matrix Asub of A
+        Matrix Asub = GetSubMatrix(A, blockRow, m);
+        // Get sub-matrix Bsub of B
+        Matrix Bsub = GetSubMatrix(B, m, blockCol);
+        // Shared memory used to store Asub and Bsub respectively
+        __shared__ float As[BLOCK_SIZE][BLOCK_SIZE];
+        __shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
+        // Load Asub and Bsub from device memory to shared memory
+        // Each thread loads one element of each sub-matrix
+        As[row][col] = GetElement(Asub, row, col);
+        Bs[row][col] = GetElement(Bsub, row, col);
+        // Synchronize to make sure the sub-matrices are loaded
+        // before starting the computation
+        __syncthreads();
+        // Multiply Asub and Bsub together
+        for (int e = 0; e < BLOCK_SIZE; ++e)
+            Cvalue += As[row][e] * Bs[e][col];
+        // Synchronize to make sure that the preceding
+        // computation is done before loading two new
+        // sub-matrices of A and B in the next iteration
+        __syncthreads();
+    }
+    // Write Csub to device memory
+    // Each thread writes one element
+    SetElement(Csub, row, col, Cvalue);
+}
+```
+
+<span id="picture-3.2"></span>
+
+<div> <!--块级封装-->
+    <center> <!--将图片和文字居中-->
+    <img src="images/matrix-multiplication-with-shared-memory.png"
+         style="zoom:100%"/>
+    <br> <!--换行-->
+    </center>
+</div>
+
+[共享内存的矩阵乘法](#picture-3.2)
 
 <span id="Title-3.2.5"></span>
 
@@ -985,6 +1277,10 @@ cudaGraphKernelNodeSetAttribute(node, cudaKernelNodeAttributeAccessPolicyWindow,
 <span id="Title-7"></span>
 
 # <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#c-language-extensions"> 7、C++语言扩展</a>
+
+<span id="Title-7.2"></span>
+
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#variable-memory-space-specifiers"> 7.2、可变内存空间说明符</a>
 
 <span id="Title-7.26"></span>
 
