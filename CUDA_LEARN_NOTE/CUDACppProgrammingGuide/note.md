@@ -1,3 +1,13 @@
+<span id="picture-logo"></span>
+
+<div> <!--块级封装-->
+    <center> <!--将图片和文字居中-->
+    <img src="images/Logo_and_CUDA.png"
+         style="zoom:200%"/>
+    <br> <!--换行-->
+    </center>
+</div>
+
 # <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html"> <<CUDA C++ Programming Guide>>学习笔记</a>
 
 ----------------------------------------------
@@ -7,6 +17,8 @@ HIPPO
 CUDA模块和接口开发文档 V12.2
 
 ----------------------------------------------
+
+
 
 <span id="Title-1"></span>
 
@@ -24,7 +36,7 @@ CUDA模块和接口开发文档 V12.2
 
 <div> <!--块级封装-->
     <center> <!--将图片和文字居中-->
-    <img src="images/gpu_cpu_schematic.png"
+    <img src="images/gpu-devotes-more-transistors-to-data-processing.png"
          alt="图1.1 GPU将更多的晶体管用于数据处理"
          style="zoom:100%"/>
     <br> <!--换行-->
@@ -46,7 +58,7 @@ CUDA模块和接口开发文档 V12.2
 
 <div> <!--块级封装-->
     <center> <!--将图片和文字居中-->
-    <img src="images/gpu_computing_applications.png"
+    <img src="images/gpu-computing-applications.png"
          alt="无法显示图片时显示的文字"
          style="zoom:100%"/>
     <br> <!--换行-->
@@ -69,7 +81,7 @@ CUDA模块和接口开发文档 V12.2
 
 <div> <!--块级封装-->
     <center> <!--将图片和文字居中-->
-    <img src="images/multi_threaded_cuda_program.png"
+    <img src="images/automatic-scalability.png"
          alt="无法显示图片时显示的文字"
          style="zoom:200%"/>
     <br> <!--换行-->
@@ -186,7 +198,7 @@ int main()
 
 <div> <!--块级封装-->
     <center> <!--将图片和文字居中-->
-    <img src="images/grid_of_thread_blocks.png"
+    <img src="images/grid-of-thread-blocks.png"
          alt="无法显示图片时显示的文字"
          style="zoom:100%"/>
     <br> <!--换行-->
@@ -243,7 +255,7 @@ int main()
 
 <div> <!--块级封装-->
     <center> <!--将图片和文字居中-->
-    <img src="images/grid_of_thread_block_cluster.png"
+    <img src="images/grid-of-thread-blocks.png"
          alt="无法显示图片时显示的文字"
          style="zoom:100%"/>
     <br> <!--换行-->
@@ -339,7 +351,7 @@ int main()
 
 <div> <!--块级封装-->
     <center> <!--将图片和文字居中-->
-    <img src="images/grid_with_cluster_memory_hierarchy.png"
+    <img src="images/memory-hierarchy.png"
          alt="无法显示图片时显示的文字"
          style="zoom:100%"/>
     <br> <!--换行-->
@@ -362,7 +374,7 @@ int main()
 
 <div> <!--块级封装-->
     <center> <!--将图片和文字居中-->
-    <img src="images/heterogeneous_programming.png"
+    <img src="images/heterogeneous-programming.png"
          alt="无法显示图片时显示的文字"
          style="zoom:100%"/>
     <br> <!--换行-->
@@ -391,12 +403,38 @@ int main()
 
 &emsp;&emsp;同步对象可以是`cuda::barrier`或者`cuda::pipeline`。这些对象在使用`cuda::pipeline`的[异步屏障](#Title-7.26)和[异步数据副本 using cuda::pipeline](#Title-7.27)中有详细的解释。这些同步对象可以在不同的线程作用域中使用。作用域定义了一组线程，这些线程可以使用同步对象来同步异步操作。下表定义了CUDA C++中可用的线程范围以及可以与每个线程同步的线程。
 
-| Thread Scope | Description |
-| -- | -- |
-| `cuda::thread_scope::thread_scope_thread` | 只有启动异步操作的 CUDA 线程同步。|
-| `cuda::thread_scope::thread_scope_block`  | 所有或任何 CUDA 线程在相同的线程块作为启动线程同步。 |
-| `cuda::thread_scope::thread_scope_device` | 在同一 GPU 设备中的所有或任何 CUDA 线程与初始线程同步。|
-| `cuda::thread_scope::thread_scope_system` | 所有或任何 CUDA 或 CPU 线程在同一系统作为启动线程同步。|
+<span id="Table-2.1"></span>
+
+<table class="table-no-stripes colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 70%">
+<col style="width: 30%">
+</colgroup>
+<thead>
+<tr class="row-odd">
+<th class="head"><p>Thread Scope</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even">
+<td><p><code class="docutils literal notranslate"><span class="pre">cuda::thread_scope::thread_scope_thread</span></code></p></td>
+<td><p>只有启动异步操作的CUDA线程同步。</p></td>
+</tr>
+<tr class="row-odd">
+<td><p><code class="docutils literal notranslate"><span class="pre">cuda::thread_scope::thread_scope_block</span></code></p></td>
+<td><p>所有或任何CUDA线程在相同的线程块作为启动线程同步。</p></td>
+</tr>
+<tr class="row-even">
+<td><p><code class="docutils literal notranslate"><span class="pre">cuda::thread_scope::thread_scope_device</span></code></p></td>
+<td><p>在同一GPU设备中的所有或任何CUDA线程与初始线程同步。</p></td>
+</tr>
+<tr class="row-odd">
+<td><p><code class="docutils literal notranslate"><span class="pre">cuda::thread_scope::thread_scope_system</span></code></p></td>
+<td><p>所有或任何CUDA或CPU线程在同一系统作为启动线程同步。</p></td>
+</tr>
+</tbody>
+</table>
 
 &emsp;&emsp;这些线程作用域是在CUDA标准c++库中作为标准c++的扩展实现的。
 
@@ -425,6 +463,465 @@ int main()
 
 # <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#programming-interface"> 3、编程接口</a>
 
+&emsp;&emsp;CUDA C++为熟悉C++编程语言的用户提供了一个简单的路径，可以轻松编写供`device`执行的程序。
+
+&emsp;&emsp;它由C++语言的最小扩展集和运行时库组成。
+
+&emsp;&emsp;在[编程模型](#Title-2)中引入了核心语言扩展。开发人员定义C++函数就像一样定义`kernel`，并在每次调用时使用一些新的语法来指定`grid`和`block`。所有扩展的完整描述可以在[C++语言扩展](#Title-7)中找到。任何包含这些扩展名的源文件都必须用`nvcc`编译，如[使用nvcc编译](#Title-3.1)所述。
+
+&emsp;&emsp;在[CUDA运行](#Title-3.2)时中引入了`runtime`。`runtime`提供了在`host`上执行的C和C++函数来分配和释放设备内存，在`host`内存和`device`内存之间传输数据，管理具有多个`device`的系统等。`runtime`的完整描述可以在CUDA参考手册中找到。
+
+&emsp;&emsp;`runtime`建立在一个较低级别的C API, `CUDA driver` API之上，`runtime`也可以被应用程序访问。`CUDA driver` API通过暴露底层概念提供了额外的控制级别，如CUDA `contexts`(模拟`device`的`host`进程)和CUDA 模块(模拟`device`动态加载库)。大多数应用程序不使用`CUDA driver`API，因为它们不需要这种额外的控制级别，并且在使用`runtime`，`context`和`module`管理是隐式的，从而产生更简洁的代码。由于`runtime`可与`CUDA driver`API互操作，因此大多数需要某些`driver`API特性的应用程序可以默认使用`runtime`API，并且仅在需要时使用`driver`API。`driver`API在[Driver API](#Title-17)中介绍，并在参考手册中进行了详细描述。
+
+<span id="Title-3.1"></span>
+
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compilation-with-nvcc"> 3.1、使用nvcc编译</a>
+
+&emsp;&emsp;`kernels`可以使用CUDA指令集架构编写，称为`PTX`。`PTX`参考手册中有描述。然而，使用高级编程语言(如C++)通常更有效。在这两种情况下，`kernels`都必须通过`nvcc`编译成二进制代码才能在`device`上执行。
+
+&emsp;&emsp;`nvcc`是一个编译器驱动程序，它简化了编译C++或`PTX`代码的过程。`nvcc`提供简单而熟悉的命令行选项，并通过调用实现不同编译阶段的工具集合来执行这些选项。本节概述了`nvcc` `workflow`和命令选项。`nvcc`用户手册有完整描述。
+
+<span id="Title-3.1.1"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compilation-workflow"> 3.1.1、编译`workflow`</a>
+
+<span id="Title-3.1.1.1"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#offline-compilation"> 3.1.1.1、离线编译</a>
+
+&emsp;&emsp;用`nvcc`编译的源文件包括`host`代码(即，在`host`上执行的代码)和`device`代码(即，在`device`上执行的代码)。`nvcc`的`basic workflow`包括从`host`上分离的`device`代码，然后：
+* 将`device`代码编译成汇编形式(`PTX` 代码)、二进制形式(`Cubin` 对象) 。
+* [Kernels](#Title-2.1)中有介绍([执行配置](#Title-7.35)有更多描述)，`nvcc`通过必要的CUDA `runtime`函数调用中引入的`<<<...>>>`语法， 调用`PTX`代码、`Cubin`对象加载和启动每个已编译的`kernel`。
+
+&emsp;&emsp;修改后的`host`代码要么作为C++代码输出，留给其他工具编译，要么在最后编译阶段通过调用`nvcc`调用`host`编译器直接作为目标代码输出。然后应用可以：
+* 要么连接到编译`host`代码(这是最常见的情况)
+* 要么忽略修改的`host`代码(如果有的话)，并使用`CUDA drvier`API(参见[Drvier API](#Title-17))来加载和执行`PTX`代码或`cubin`对象。
+
+<span id="Title-3.1.1.2"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#just-in-time-compilation"> 3.1.1.2、即时编译</a>
+
+&emsp;&emsp;应用程序在`runtime`加载的任何`PTX`代码都由`device driver`进一步编译为二进制代码。这就是即时编译。即时编译增加了应用程序的加载时间，但允许应用程序从每个新`device driver`带来的任何新的编译器改进中受益。即时编译也是应用程序在非编译时的`device`上运行的唯一方法。详见[应用兼容性](#Title-3.1.4)。
+
+&emsp;&emsp;当`device driver`为某个应用即时编译某些`PTX`代码时，它会自动缓存生成的二进制代码的副本，以避免在应用的后续调用中重复编译。缓存(计算缓存)在`device driver`升级时自动失效，因此应用可以从编译到`device driver`中的新即时编译器的改进中受益。
+
+&emsp;&emsp;环境变量可用于控制即时编译，如[CUDA 环境变量](#Title-18)所述。
+
+&emsp;&emsp;作为使用`nvcc`编译CUDA C++ `device`代码的替代方案。`NVRTC`可以在`runtime`时将CUDA C++ `device`代码编译`PTX`。`NVRTC`是CUDA C++的`runtime`编译库。更多信息可以在`NVRTC`用户指南中找到。
+
+<span id="Title-3.1.2"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#binary-compatibility"> 3.1.2、二进制兼容性</a>
+
+&emsp;&emsp;二进制文件是一个特殊的架构。`cubin`是使用`-code`编译选项指定目标架构生成的，例如：使用`-code=sm_80`编译具有8.0计算能力的`devices`生成二进制代码。二进制兼容性保证一个次要版本到下一个版本的兼容性，但不能保证从一个小版本到前一个小版本或跨主要版本的二进制兼容性。换句话说，为X.y的计算能力生成的`cubin`对象保证能在拥有X.z计算能力的`devices`上运行，只要z>=y。
+
+> __注意__
+> 二进制兼容性仅支持`desktop`。二进制兼容性不支持`Tegra`。此外，`desktop`和`Tegra`之间的二进制兼容性也不支持。
+
+<span id="Title-3.1.3"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#ptx-compatibility"> 3.1.3、`PTX`兼容性</a>
+
+&emsp;&emsp;一些`PTX`指令仅支持具有更高计算能力的`device`。例如，`Warp Shuffle Functions`仅支持计算能力5.0及以上的`device`。`-arch`编译选项指定将C++编译为假定的计算能力。因此，例如，包含`warp shuffle`的代码必须使用`-arch=compute 50`(或更高)进行编译。
+
+&emsp;&emsp;为某些特定计算能力而产生的`PTX`代码可以被编译成具有更高或同等计算能力的二进制代码。请注意，从早期`PTX`版本编译的二进制文件可能无法使用某些硬件特性。例如，由为计算能力6.0(`Pascal`)生成的`PTX`编译的具有计算能力7.0(`Volta`)的二进制目标`device`将不使用`Tensor Core`指令，因为这些指令在`Pascal`上不可用。因此，最终的二进制文件的性能可能比使用最新版本的`PTX`生成的二进制文件的性能更差。
+
+<span id="Title-3.1.4"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#application-compatibility"> 3.1.4、应用兼容性</a>
+
+&emsp;&emsp;要在具有特定计算能力的`device`上执行代码，应用程序必须加载与此计算能力兼容的二进制代码或`PTX`代码，如[二进制兼容性](#Title-3.1.2)和[`PTX`兼容性](#Title-3.1.3)中所述。特别是，为了能够在计算能力更强的未来架构上执行代码(目前还不能生成二进制代码)，应用程序必须加载为这些`devices`即时编译的`PTX`代码(见[即时编译](#Title-3.1.1.2))。
+
+&emsp;&emsp;在CUDA C++应用程序中嵌入哪些`PTX`和二进制代码由`-arch`和`-code`编译器选项或`-gencode`编译器选项控制，详见`nvcc`用户手册。例如：
+
+<span id="code-3.1"></span>
+
+```C++
+nvcc x.cu
+        -gencode arch=compute_50,code=sm_50
+        -gencode arch=compute_60,code=sm_60
+        -gencode arch=compute_70,code=\"compute_70,sm_70\"
+```
+
+&emsp;&emsp;计算能力5.0和6.0的嵌入式二进制代码兼容性(第一选项或第二选项 `-gencode`)，计算能力7.0的`PTX`兼容性和二进制代码兼容性。
+
+&emsp;&emsp;生成`host`代码，以便在`runtime`自动选择要加载和执行的最合适的代码，在[上述示例](#code-3.1)中，这些代码将是:
+
+* 具有5.0和5.2计算能力的`device`的5.0二进制代码
+* 具有6.0和6.1计算能力的`device`的6.0二进制代码
+* 具有7.0和7.5计算能力的`device`的7.0二进制代码
+* 具有8.0和8.6计算能力的`device`的编译成`runtime`二进制代码`PTX`代码
+
+&emsp;&emsp;`x.cu`文件有一个优化代码的路径，它使用`warp`减少操作。例如，只支持在8.0或更高计算能力的设备。`__CUDA_ARCH__`宏可用于根据计算能力区分各种代码路径。`__CUDA_ARCH__`只定义了`device`代码。例如，当使用`-arch=compute_80`编译时，`__CUDA_ARCH__`等于800。
+
+&emsp;&emsp;使用`driver`API的应用程序必须分离文件来编译代码，并且在`runtime`显示加载和执行最合适的文件。
+
+&emsp;&emsp;`Volta`架构架构引入了[独立线程调度](#Title-16.6.2)，它改变了GPU上线程调度的方式。对于依赖于先前体系结构中[`SIMT`调度](#Title-4.1)的特定行为的代码，[独立线程调度](#Title-16.6.2)可能会改变参与线程的集合，从而导致不正确的结果。为了在实现[独立线程调度](#Title-16.6.2)中详细描述的纠正措施的同时帮助迁移，`Volta`开发人员可以使用编译器选项组合`-arch=compute_60 -code=sm_70`来选择`Pascal`的线程调度。
+
+&emsp;&emsp;`nvcc`手册列举了各种`-arch`,`-code`和`-gencode`编译选项的缩写。例如`-arch=sm_70`是`-arch=compute_70 -code=compute_70,sm_70`(或`-gencode arch=compute_70,code=\"compute_70,sm_70\"`)的缩写。
+
+<span id="Title-3.1.5"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#c-compatibility"> 3.1.5、C++兼容性</a>
+
+&emsp;&emsp;遵循C++语法规则是编译CUDA源文件的前提。`host`代码完整支持C++。然而，就像[C++语言支持](#Title-14)中描述的`device`代码只完全支持C++的一个子集。
+
+<span id="Title-3.1.6"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#bit-compatibility"> 3.1.6、64位兼容性</a>
+
+&emsp;&emsp;64位版本的`nvcc`以64位模式编译`device`代码(即，指针是64位的)。以64位模式编译的`device`代码仅支持以64位模式编译的`host`代码。
+
+<span id="Title-3.2"></span>
+
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-runtime"> 3.2、CUDA 运行时</a>
+
+&emsp;&emsp;`runtime`是在`cudart`库中实现的，通过`cudart.lib`或者`libcudart.a`静态链接到应用，或通过`cudart.dll`或`libcudart.so`动态链接到应用。对于动态链接来说，需要 cutart.dll 和/或 cutart.so 的应用程序通常将它们作为应用程序安装包的一部分。只有在链接到相同CUDA`runtime`实例的组件之间传递CUDA`runtime`符号的地址才是安全的。
+
+&emsp;&emsp;`runtime`所有的入口都是以`cuda`为前缀的。
+
+&emsp;&emsp;正如在[异构编程](#Title-2.4)中提到的，CUDA编程模型假定一个由`host`和`device`组成的系统，每个`host`和`device`都有自己独立的内存。[`device`内存](#Title-3.2.2)概述了用于管理`device`内存的`runtime`函数。
+
+&emsp;&emsp;[共享内存](#Title-3.2.4)演示了如何使用[线程层次结构](#Title-2.2)中引入的共享内存来最大限度地提高性能。
+
+&emsp;&emsp;[页面锁定`host`内存](#Title-3.2.6)引入页面锁定`host`内存，需要重叠`kernel`执行与`host`内存和`device`内存之间的数据传输。
+
+&emsp;&emsp;[异步并发执行](#Title-3.2.8)描述了用于在系统的不同级别上支持异步并发执行的概念和API。
+
+&emsp;&emsp;[多`device`系统](#Title-3.2.9)演示了如何将编程模型扩展到具有多个`device`连接到同一`host`的系统。
+
+&emsp;&emsp;[错误检查](#Title-3.2.12)描述如何正确检查`runtime`生成的错误。
+
+&emsp;&emsp;[调用堆栈](#Title-3.2.13)提到了用于管理CUDA C++调用堆栈的`runtime`函数。
+
+&emsp;&emsp;[`texture`和`surface`内存](#Title-3.2.14)提供了`texture`和`surface`存储器空间，提供了另一种访问`device`存储器的方式; 它们还公开了GPU`texture`硬件的一个子集。
+
+&emsp;&emsp;[图形互操作性](#Title-3.2.15)引入了`runtime`提供的与两个主要图形API(`OpenGL`和`Direct3D`)互操作的各种功能。
+
+<span id="Title-3.2.1"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#initialization"> 3.2.1、初始化</a>
+
+&emsp;&emsp;从CUDA 12.0开始，`cudaInitDevice()`和`cudaSetDevice()`调用初始化`runtime`和指定`device`的主要`context`。如果没有这些调用，`runtime`将根据需要隐式使用`device 0`和自初始化来处理其他`runtime`API请求。在计时调用`runtime`函数以及将第一次调用的错误代码解释到`runtime`时，需要记住这一点。在12.0之前，`cudaSetDevice()`不会初始化`runtime`，应用程序通常会使用无操作`runtime`调用`cudaFree(0)`来将`runtime`初始化与其他api活动隔离开来(都是为了计时和错误处理)。
+
+&emsp;&emsp;`runtime`为系统中的每个`device`创建一个CUDA`context`(有关CUDA`context`的更多详细信息，请参阅[`context`](#Title-17.1))。此`context`是`device`的主`context`，并在第一个`runtime`函数中初始化，该函数需要此`device`上的活动`context`。`context`在应用程序的所有`host`线程之间共享。作为`context`创建的一部分，如果有必要，`device`代码将被即时编译(参见[即时编译](#Title-3.1.1.2))并加载到`device`内存中。这一切都是显而易见的。如果需要，例如，对于`driver`API的互操作性，`device`的主要`context`可以从`driver`API访问，如[`runtime`和`driver`APIs之间的互操作性](#Title-17.4)中所述。
+
+&emsp;&emsp;当`host`线程调用`cudaDeviceReset()`时，这会破坏`host`线程当前操作的`device`的主`context`(即，[`device`选择](#Title-3.2.9.2)中定义的当前`device`)。任何拥有此`device`的`host`线程的下一个`runtime`函数调用将为该`device`创建一个新的主`context`。
+
+> __注意__
+> CUDA接口使用全局状态，在`host`程序启动期间初始化，在`host`程序终止期间销毁。CUDA`runtime`和`driver`程序无法检测此状态是否无效，因此在程序启动或main后终止期间使用任何这些接口(隐式或显式)将导致未定义的行为。
+> 
+> 从CUDA 12.0开始，`cudaSetDevice()`会在更改当前`device`的`host`线程后显示初始化`runtime`。之前的CUDA延迟了新`device` `runtime`初始化，直到`cudaSetDevice()`之后进行第一次`runtime`调用。此更改意味着现在检查`cudaSetDevice()`的初始化错误很重要。
+> 
+> 参考手册中的错误处理和版本管理部分中的`runtime`函数不会初始化`runtime`。
+
+<span id="Title-3.2.2"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory"> 3.2.2、`device`内存</a>
+
+&emsp;&emsp;正如[异构编程](#Title-2.4)中提到的，CUDA编程模型假设一个由`host`和`device`组成的系统，每个`host`和`device`都有自己独立的内存。`kernel`在设备内存之外运行，因此`runtime`提供了分配、释放和复制`device`内存的函数，以及在`host`内存和`device`内存之间传输数据。
+
+&emsp;&emsp;`device`内存可以分配为线性内存或CUDA arrays。
+
+&emsp;&emsp;CUDA数组是针对`texture`获取优化的不透明内存布局。[texture和surface内存](#Title-3.2.14)中有提到。
+
+&emsp;&emsp;线性内存分配在一个单一的统一地址空间中，这意味着单独分配的实体可以通过指针相互引用，例如，在二叉树或链表中。地址空间的大小取决于`host`系统(CPU)和GPU的计算能力
+
+<span id="Table-3.1"></span>
+
+<table class="table-no-stripes docutils align-default" id="id106">
+<caption>
+<span class="caption-text">Linear Memory Address Space</span>
+</caption>
+<colgroup>
+<col style="width: 48%">
+<col style="width: 18%">
+<col style="width: 19%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="row-odd">
+<th class="head"></th>
+<th class="head"><p>x86_64 (AMD64)</p></th>
+<th class="head"><p>POWER (ppc64le)</p></th>
+<th class="head"><p>ARM64</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even">
+<td><p>up to compute capability 5.3 (Maxwell)</p></td>
+<td><p>40bit</p></td>
+<td><p>40bit</p></td>
+<td><p>40bit</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>compute capability 6.0 (Pascal) or newer</p></td>
+<td><p>up to 47bit</p></td>
+<td><p>up to 49bit</p></td>
+<td><p>up to 48bit</p></td>
+</tr>
+</tbody>
+</table>
+
+> __注意__
+> 在计算能力为5.3(`Maxwell`)和更早版本的`device`上，CUDA `drivcer`创建一个未提交的40位虚拟地址预留，以确保内存分配(指针)符合支持的范围。这个预留显示为保留的虚拟内存，但是在程序实际分配内存之前不占用任何物理内存。
+
+&emsp;&emsp;线性内存通常使用`cudaMalloc()`分配，使用`cudaFree()`释放，`host`内存和`device`内存之间的数据传输通常使用`cudaMemcpy()`完成。在`kernel`的向量加法[代码示例](#code-3.2)中，向量需要从`host`内存复制到`device`内存:
+
+<span id="code-3.2"></span>
+
+```C++
+// Device code
+__global__ void VecAdd(float* A, float* B, float* C, int N)
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < N)
+        C[i] = A[i] + B[i];
+}
+
+// Host code
+int main()
+{
+    int N = ...;
+    size_t size = N * sizeof(float);
+
+    // Allocate input vectors h_A and h_B in host memory
+    float* h_A = (float*)malloc(size);
+    float* h_B = (float*)malloc(size);
+    float* h_C = (float*)malloc(size);
+
+    // Initialize input vectors
+    ...
+
+    // Allocate vectors in device memory
+    float* d_A;
+    cudaMalloc(&d_A, size);
+    float* d_B;
+    cudaMalloc(&d_B, size);
+    float* d_C;
+    cudaMalloc(&d_C, size);
+
+    // Copy vectors from host memory to device memory
+    cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
+
+    // Invoke kernel
+    int threadsPerBlock = 256;
+    int blocksPerGrid =
+            (N + threadsPerBlock - 1) / threadsPerBlock;
+    VecAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, N);
+
+    // Copy result from device memory to host memory
+    // h_C contains the result in host memory
+    cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);
+
+    // Free device memory
+    cudaFree(d_A);
+    cudaFree(d_B);
+    cudaFree(d_C);
+
+    // Free host memory
+    ...
+}
+```
+
+&emsp;&emsp;线性内存也可以通过`cudaMallocPitch()`和`cudaMalloc3D()`分配。这些函数被推荐用于2D或3D`array`的分配，因为它确保分配被适当地填充以满足[`device`内存访问](#Title-5.3.2)中描述的对齐要求，从而确保在访问行地址或在2D阵列和`device`内存的其他区域之间执行副本时的最佳性能(使用`cudaMemcpy2D()`和`cudaMemcpy3D()`函数)。[代码示例](#code-3.3)分配一个由float组成的宽 x 高的2D数组，并演示如何在`device`代码中循环数组元素:
+
+<span id="code-3.3"></span>
+
+```C++
+// Host code
+int width = 64, height = 64;
+float* devPtr;
+size_t pitch;
+cudaMallocPitch(&devPtr, &pitch, width * sizeof(float), height);
+MyKernel<<<100, 512>>>(devPtr, pitch, width, height);
+
+// Device code
+__global__ void MyKernel(float* devPtr, size_t pitch, int width, int height)
+{
+    for (int r = 0; r < height; ++r)
+    {
+        float* row = (float*)((char*)devPtr + r * pitch);
+        for (int c = 0; c < width; ++c)
+        {
+            float element = row[c];
+        }
+    }
+}
+```
+
+&emsp;&emsp;[代码示例](#code-3.4)分配一个float的宽度 x 高度 x 深度的3D数组，并演示如何在`device`代码中循环遍历数组元素:
+
+<span id="code-3.4"></span>
+
+```C++
+// Host code
+int width = 64, height = 64, depth = 64;
+cudaExtent extent = make_cudaExtent(width * sizeof(float), height, depth);
+cudaPitchedPtr devPitchedPtr;
+cudaMalloc3D(&devPitchedPtr, extent);
+MyKernel<<<100, 512>>>(devPitchedPtr, width, height, depth);
+
+// Device code
+__global__ void MyKernel(cudaPitchedPtr devPitchedPtr, int width, int height, int depth)
+{
+    char* devPtr = devPitchedPtr.ptr;
+    size_t pitch = devPitchedPtr.pitch;
+    size_t slicePitch = pitch * height;
+    for (int z = 0; z < depth; ++z)
+    {
+        char* slice = devPtr + z * slicePitch;
+        for (int y = 0; y < height; ++y)
+        {
+            float* row = (float*)(slice + y * pitch);
+            for (int x = 0; x < width; ++x)
+            {
+                float element = row[x];
+            }
+        }
+    }
+}
+```
+
+> __注意__
+> 为了避免分配过多的内存从而影响系统范围的性能，根据问题大小向用户请求分配参数。如果分配失败，您可以退回到其他较慢的内存类型(`cudaMallocHost()`，`cudaHostRegister()`等)，或者返回一个错误，告诉用户需要多少内存被拒绝。如果您的应用程序由于某些原因无法请求分配参数，我们建议在支持它的平台上使用`cudaMallocManaged()`。
+
+&emsp;&emsp;参考手册列出了所有用于复制线性内存之间的内存的各种函数，用 `cudaMallocPitch()`分配的线性内存，用 `cudaMallocPitch()`或`cudaMalloc3D()`分配的线性内存，CUDA `arrays`以及在`global`或`constant`内存空间声明的变量分配的内存。
+
+&emsp;&emsp;代码示例说明了通过运行时 API 访问全局变量的各种方法:
+
+<span id="code-3.5"></span>
+
+```C++
+__constant__ float constData[256];
+float data[256];
+cudaMemcpyToSymbol(constData, data, sizeof(data));
+cudaMemcpyFromSymbol(data, constData, sizeof(data));
+
+__device__ float devData;
+float value = 3.14f;
+cudaMemcpyToSymbol(devData, &value, sizeof(float));
+
+__device__ float* devPointer;
+float* ptr;
+cudaMalloc(&ptr, 256 * sizeof(float));
+cudaMemcpyToSymbol(devPointer, &ptr, sizeof(ptr));
+```
+
+&emsp;&emsp;`CudaGetSymbolAddress()`用于检索指向为`global`内存空间中声明的变量分配的内存的地址。`cudaGetSymbolSize()`可获得所分配内存的大小。
+
+<span id="Title-3.2.3"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-l2-access-management"> 3.2.3、`device`内存L2访问管理</a>
+
+&emsp;&emsp;当CUDA`kernel`重复访问`global`内存中的一个数据区域时，这种数据访问可以被认为是持久的。另一方面，如果数据只被访问一次，那么这种数据访问可以被认为是流式的。
+
+&emsp;&emsp;从CUDA11.0开始，具有8.0及以上计算能力的`device`能够影响L2缓存中数据的持久性，有可能提供更高的带宽和对`global`内存的更低延迟访问。
+
+<span id="Title-3.2.3.1"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#l2-cache-set-aside-for-persisting-accesses"> 3.2.3.1、L2缓存用于持久访问的设置</a>
+
+&emsp;&emsp;L2缓存的一部分可以预留出来，用于对`global`内存进行持久化数据访问。持久化访问优先使用这个L2缓存的预留部分，而对`global`内存的正常或流式访问只能在持久化访问未使用时使用L2的这一部分。
+
+&emsp;&emsp;用于持久访问的 L2缓存预留大小可以在限制范围内进行调整:
+
+<span id="code-3.6"></span>
+
+```C++
+cudaGetDeviceProperties(&prop, device_id);
+size_t size = min(int(prop.l2CacheSize * 0.75), prop.persistingL2CacheMaxSize);
+cudaDeviceSetLimit(cudaLimitPersistingL2CacheSize, size); /* set-aside 3/4 of L2 cache for persisting accesses or the max allowed*/
+```
+
+&emsp;&emsp;当GPU配置为多实例GPU(MIG)模式时，将禁用L2缓存设置功能。
+
+&emsp;&emsp;使用多进程服务(Multi-Process Service，MPS)时，`CudaDeviceSetlimit()`不能更改L2缓存的预留大小。相反，预留大小只能在启动MPS服务器时通过环境变量`CUDA_DEVICE_DEFAULT_PERSISTING_L2_CACHE_PERCENTAGE_LIMIT`指定。
+
+<span id="Title-3.2.3.2"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#l2-policy-for-persisting-accesses"> 3.2.3.2、L2持久访问策略</a>
+
+&emsp;&emsp;访问策略窗口指定一个连续的`global`内存区域和L2缓存中用于该区域内访问的持久性属性。
+
+&emsp;&emsp;[代码示例](#code-3.7)演示如何使用CUDA流设置L2持久访问窗口。
+
+__CUDA Stream Example__
+
+<span id="code-3.7"></span>
+
+```C++
+cudaStreamAttrValue stream_attribute;                                         // Stream level attributes data structure
+stream_attribute.accessPolicyWindow.base_ptr  = reinterpret_cast<void*>(ptr); // Global Memory data pointer
+stream_attribute.accessPolicyWindow.num_bytes = num_bytes;                    // Number of bytes for persistence access.
+                                                                              // (Must be less than cudaDeviceProp::accessPolicyMaxWindowSize)
+stream_attribute.accessPolicyWindow.hitRatio  = 0.6;                          // Hint for cache hit ratio
+stream_attribute.accessPolicyWindow.hitProp   = cudaAccessPropertyPersisting; // Type of access property on cache hit
+stream_attribute.accessPolicyWindow.missProp  = cudaAccessPropertyStreaming;  // Type of access property on cache miss.
+
+//Set the attributes to a CUDA stream of type cudaStream_t
+cudaStreamSetAttribute(stream, cudaStreamAttributeAccessPolicyWindow, &stream_attribute);
+```
+
+&emsp;&emsp;当`kernel`随后在CUDA流中执行时，访问`global`内存范围`[ptr..ptr+num_bytes)`比访问其他`global`内存位置更有可能持久存储在L2缓存中。
+
+&emsp;&emsp;L2持久性也可以为CUDA`gragh kernel node`设置，如[代码示例](#code-3.8)所示
+
+__CUDA GraphKernelNode Example__
+
+<span id="code-3.8"></span>
+
+```C++
+cudaKernelNodeAttrValue node_attribute;                                     // Kernel level attributes data structure
+node_attribute.accessPolicyWindow.base_ptr  = reinterpret_cast<void*>(ptr); // Global Memory data pointer
+node_attribute.accessPolicyWindow.num_bytes = num_bytes;                    // Number of bytes for persistence access.
+                                                                            // (Must be less than cudaDeviceProp::accessPolicyMaxWindowSize)
+node_attribute.accessPolicyWindow.hitRatio  = 0.6;                          // Hint for cache hit ratio
+node_attribute.accessPolicyWindow.hitProp   = cudaAccessPropertyPersisting; // Type of access property on cache hit
+node_attribute.accessPolicyWindow.missProp  = cudaAccessPropertyStreaming;  // Type of access property on cache miss.
+
+//Set the attributes to a CUDA Graph Kernel node of type cudaGraphNode_t
+cudaGraphKernelNodeSetAttribute(node, cudaKernelNodeAttributeAccessPolicyWindow, &node_attribute);
+```
+
+&emsp;&emsp;`hitRatio`参数可用于指定接收`hitProp`属性的访问的分数。在上面的两个示例中，60%的内存访问在`global`内存区域`[ptr..ptr+num_bytes)`具有持久化属性，40%的内存访问具有流属性。哪些特定的内存访问被归类为持久化(`hitProp`)是随机的，其概率接近`hitRatio`，其概率分布取决于硬件架构和内存范围。
+
+&emsp;&emsp;例如，如果L2预留缓存大小为16KB，而`accPolicyWindow`中的`num_bytes`为32KB:
+* 当`hitRatio`为0.5时，硬件将随机选择32KB窗口中的16KB作为持久化并缓存在预留的L2缓存区域中。
+* 当`hitRatio`为1.0时，硬件将尝试在预留的L2缓存区缓存整个32KB窗口。由于预留区域小于窗口，因此将删除缓存线路，以便将最近使用的32KB数据中的16KB保留在L2缓存的预留部分中。
+
+&emsp;&emsp;因此，可以使用`hitRatio`来避免缓存线路的颠簸，并总体上减少进出L2缓存的数据量。
+
+&emsp;&emsp;`hitRatio`值低于1.0可以用来手动控制数据量不同的`accessPolicyWindow`从并发CUDA流可以缓存在 L2。例如，设置L2的预留缓存大小为16KB; 两个不同CUDA流中的两个并发`kernel`，每个都有16KB的`accessPolicyWindow`，并且都有`hitRatio`值1.0，可能会在竞争共享L2资源时排除对方的缓存线。
+
+<span id="Title-3.2.3.3"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#l2-access-properties"> 3.2.3.3、L2访问属性</a>
+
+&emsp;&emsp;为不同的`global`内存数据访问定义了三种类型的访问属性:
+
+
+<span id="Title-3.2.3.4"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#l2-persistence-example"> 3.2.3.4、L2持久性示例</a>
+
+<span id="Title-3.2.3.5"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#reset-l2-access-to-normal"> 3.2.3.5、重置L2访问正常</a>
+
+<span id="Title-3.2.3.6"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#manage-utilization-of-l2-set-aside-cache"> 3.2.3.6、管理L2预置缓存利用率</a>
+
+<span id="Title-3.2.3.7"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#query-l2-cache-properties"> 3.2.3.7、查询L2缓存属性</a>
+
+<span id="Title-3.2.3.8"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#control-l2-cache-set-aside-size-for-persisting-memory-access"> 3.2.3.8、控制L2预置缓存大小来持久访问内存</a>
+
 <span id="Title-3.2.4"></span>
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory"> 3.2.4、共享内存</a>
@@ -433,13 +930,45 @@ int main()
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#distributed-shared-memory"> 3.2.5、分布式共享内存</a>
 
+<span id="Title-3.2.6"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#page-locked-host-memory"> 3.2.6、页面锁定`host`内存</a>
+
+<span id="Title-3.2.8"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#asynchronous-concurrent-execution"> 3.2.8、异步并发执行</a>
+
+<span id="Title-3.2.9"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#multi-device-system"> 3.2.9、多`device`系统</a>
+
+<span id="Title-3.2.9.2"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-selection"> 3.2.9.2、`device`选择</a>
+
+<span id="Title-3.2.12"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#error-checking"> 3.2.12、错误检查</a>
+
+<span id="Title-3.2.13"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#call-stack"> 3.2.13、调用堆栈</a>
+
 <span id="Title-3.2.14"></span>
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#texture-and-surface-memory"> 3.2.14、`texture`和`surface`内存</a>
 
+<span id="Title-3.2.15"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#graphics-interoperability"> 3.2.15、图形互操作性</a>
+
 <span id="Title-4"></span>
 
 # <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#hardware-implementation"> 4、硬件实现</a>
+
+<span id="Title-4.1"></span>
+
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#simt-architecture"> 4.1、`SIMT`架构</a>
 
 <span id="Title-5"></span>
 
@@ -447,7 +976,7 @@ int main()
 
 <span id="Title-5.3.2"></span>
 
-## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-accesses"> 5.3.2、设备内存访问</a>
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-memory-accesses"> 5.3.2、`device`内存访问</a>
 
 <span id="Title-6"></span>
 
@@ -464,6 +993,10 @@ int main()
 <span id="Title-7.27"></span>
 
 ## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#asynchronous-data-copies"> 7.27、异步数据副本</a>
+
+<span id="Title-7.35"></span>
+
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#execution-configuration"> 7.35、执行配置</a>
 
 <span id="Title-8"></span>
 
@@ -501,12 +1034,25 @@ int main()
 
 # <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capabilities"> 16、计算能力</a>
 
+<span id="Title-16.6.2"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#independent-thread-scheduling"> 16.6.2、独立线程调度</a>
+
 <span id="Title-16.8"></span>
 
 ## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capability-9-0"> 16.8、计算能力 9.0</a>
 
 <span id="Title-17"></span>
+
 # <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#driver-api"> 17、Driver API</a>
+
+<span id="Title-17.1"></span>
+
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#context"> 17.1、`context`</a>
+
+<span id="Title-17.4"></span>
+
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#interoperability-between-runtime-and-driver-apis"> 17.4、`runtime`和`Driver` API 之间的互操作性</a>
 
 <span id="Title-18"></span>
 
