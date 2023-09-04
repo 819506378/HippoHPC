@@ -401,7 +401,7 @@ int main()
 
 &emsp;&emsp;异步线程(as-if线程)总是与发起异步操作的CUDA线程相关联。异步操作使用同步对象来完成同步操作。这样的同步对象可以由用户显式地管理(例如，`cuda::memcpy_async`)或在库中隐式地管理(例如，`cooperative_groups::memcpy_async`)。
 
-&emsp;&emsp;同步对象可以是`cuda::barrier`或者`cuda::pipeline`。这些对象在使用`cuda::pipeline`的[异步屏障](#Title-7.26)和[异步数据副本 using cuda::pipeline](#Title-7.27)中有详细的解释。这些同步对象可以在不同的线程作用域中使用。作用域定义了一组线程，这些线程可以使用同步对象来同步异步操作。下表定义了CUDA C++中可用的线程范围以及可以与每个线程同步的线程。
+&emsp;&emsp;同步对象可以是`cuda::barrier`或者`cuda::pipeline`。这些对象在使用`cuda::pipeline`的[异步屏障](#Title-7.26)和[异步数据拷贝 using cuda::pipeline](#Title-7.27)中有详细的解释。这些同步对象可以在不同的线程作用域中使用。作用域定义了一组线程，这些线程可以使用同步对象来同步异步操作。下表定义了CUDA C++中可用的线程范围以及可以与每个线程同步的线程。
 
 <span id="Table-2.1"></span>
 
@@ -427,7 +427,7 @@ int main()
 </tr>
 <tr class="row-even">
 <td><p><code class="docutils literal notranslate"><span class="pre">cuda::thread_scope::thread_scope_device</span></code></p></td>
-<td><p>在同一GPU设备中的所有或任何CUDA线程与初始线程同步。</p></td>
+<td><p>在同一GPU`device`中的所有或任何CUDA线程与初始线程同步。</p></td>
 </tr>
 <tr class="row-odd">
 <td><p><code class="docutils literal notranslate"><span class="pre">cuda::thread_scope::thread_scope_system</span></code></p></td>
@@ -479,7 +479,7 @@ int main()
 
 &emsp;&emsp;`kernels`可以使用CUDA指令集架构编写，称为`PTX`。`PTX`参考手册中有描述。然而，使用高级编程语言(如C++)通常更有效。在这两种情况下，`kernels`都必须通过`nvcc`编译成二进制代码才能在`device`上执行。
 
-&emsp;&emsp;`nvcc`是一个编译器驱动程序，它简化了编译C++或`PTX`代码的过程。`nvcc`提供简单而熟悉的命令行选项，并通过调用实现不同编译阶段的工具集合来执行这些选项。本节概述了`nvcc` `workflow`和命令选项。`nvcc`用户手册有完整描述。
+&emsp;&emsp;`nvcc`是一个编译器`driver`，它简化了编译C++或`PTX`代码的过程。`nvcc`提供简单而熟悉的命令行选项，并通过调用实现不同编译阶段的工具集合来执行这些选项。本节概述了`nvcc` `workflow`和命令选项。`nvcc`用户手册有完整描述。
 
 <span id="Title-3.1.1"></span>
 
@@ -503,7 +503,7 @@ int main()
 
 &emsp;&emsp;应用程序在`runtime`加载的任何`PTX`代码都由`device driver`进一步编译为二进制代码。这就是即时编译。即时编译增加了应用程序的加载时间，但允许应用程序从每个新`device driver`带来的任何新的编译器改进中受益。即时编译也是应用程序在非编译时的`device`上运行的唯一方法。详见[应用兼容性](#Title-3.1.4)。
 
-&emsp;&emsp;当`device driver`为某个应用即时编译某些`PTX`代码时，它会自动缓存生成的二进制代码的副本，以避免在应用的后续调用中重复编译。缓存(计算缓存)在`device driver`升级时自动失效，因此应用可以从编译到`device driver`中的新即时编译器的改进中受益。
+&emsp;&emsp;当`device driver`为某个应用即时编译某些`PTX`代码时，它会自动缓存生成的二进制代码的拷贝，以避免在应用的后续调用中重复编译。缓存(计算缓存)在`device driver`升级时自动失效，因此应用可以从编译到`device driver`中的新即时编译器的改进中受益。
 
 &emsp;&emsp;环境变量可用于控制即时编译，如[CUDA 环境变量](#Title-18)所述。
 
@@ -725,7 +725,7 @@ int main()
 }
 ```
 
-&emsp;&emsp;线性内存也可以通过`cudaMallocPitch()`和`cudaMalloc3D()`分配。这些函数被推荐用于2D或3D`array`的分配，因为它确保分配被适当地填充以满足[`device`内存访问](#Title-5.3.2)中描述的对齐要求，从而确保在访问行地址或在2D阵列和`device`内存的其他区域之间执行副本时的最佳性能(使用`cudaMemcpy2D()`和`cudaMemcpy3D()`函数)。[代码示例](#code-3.3)分配一个由float组成的宽 x 高的2D数组，并演示如何在`device`代码中循环数组元素:
+&emsp;&emsp;线性内存也可以通过`cudaMallocPitch()`和`cudaMalloc3D()`分配。这些函数被推荐用于2D或3D`array`的分配，因为它确保分配被适当地填充以满足[`device`内存访问](#Title-5.3.2)中描述的对齐要求，从而确保在访问行地址或在2D阵列和`device`内存的其他区域之间执行拷贝时的最佳性能(使用`cudaMemcpy2D()`和`cudaMemcpy3D()`函数)。[代码示例](#code-3.3)分配一个由float组成的宽 x 高的2D数组，并演示如何在`device`代码中循环数组元素:
 
 <span id="code-3.3"></span>
 
@@ -1295,7 +1295,7 @@ __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_pe
 }
 ```
 
-&emsp;&emsp;上面的`kernel`可以在`runtime`启动，`cluster`大小取决于所需的`distributed shared memory`数量。如果直方图足够小，只能容纳一个`block`的`shared memory`，那么用户可以启动`cluster`大小为1的`kernel`。[下面的代码示例](#code-3.13)显示了如何根据`shared memory`需求动态启动`cluster kernel`。
+&emsp;&emsp;上面的`kernel`可以在`runtime`启动，`cluster`大小取决于所需的`distributed shared memory`数量。如果直方图足够小，只能容纳一个`block`的`shared memory`，那么用户可以启动`cluster`大小为1的`kernel`。[代码示例](#code-3.13)显示了如何根据`shared memory`需求动态启动`cluster kernel`。
 
 <span id="code-3.13"></span>
 
@@ -1339,7 +1339,7 @@ __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_pe
 * `cudaHostRegister()`页面锁定`malloc()`分配的内存范围(有关限制，请参阅参考手册)。
 
 &emsp;&emsp;使用锁页`host`内存有几个好处:
-* 对于[异步并发执行](#Title-3.2.8)中提到的某些`device`，页锁定的`host`内存和`device`内存之间的副本可以与`kernel`并发执行。
+* 对于[异步并发执行](#Title-3.2.8)中提到的某些`device`，页锁定的`host`内存和`device`内存之间的拷贝可以与`kernel`并发执行。
 * 在某些`device`上，页锁定的`host`内存可以映射到`device`的地址空间，从而不需要像映射内存中详细说明的那样将其复制到`device`内存或从`device`内存中复制。
 * 在具有前端总线的系统上，如果`host`内存被分配为页锁定，那么`host`内存和`device`内存之间的带宽会更高，如果另外按写-组合内存中描述的那样，`host`内存被分配为写-组合内存，那么带宽会更高。
 
@@ -1352,7 +1352,7 @@ __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_pe
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#portable-memory"> 3.2.6.1、便携式存储器</a>
 
-&emsp;&emsp;一块页面锁定内存可以与系统中的任何`device`结合使用(更多关于多`device`系统的详细信息，请参阅[多设备系统](#Title-3.2.9))，但默认情况下，使用上述页面锁定内存的好处只能与分配该`blcok`时当前的`device`结合使用(以及所有`device`共享相同的统一地址空间，如果有的话，如[统一虚拟地址空间](#Title-3.2.10)所述)。为了让所有`device`都能获得这些优势，需要通过将标志 `cudaHostAllocPortable`传递给`cudaHostAlloc()`来分配`block`，或者通过将标志 `cudaHostRegisterPortable`传递给`cudaHostRegister()`来锁定页面。
+&emsp;&emsp;一块页面锁定内存可以与系统中的任何`device`结合使用(更多关于多`device`系统的详细信息，请参阅[多`device`系统](#Title-3.2.9))，但默认情况下，使用上述页面锁定内存的好处只能与分配该`blcok`时当前的`device`结合使用(以及所有`device`共享相同的统一地址空间，如果有的话，如[统一虚拟地址空间](#Title-3.2.10)所述)。为了让所有`device`都能获得这些优势，需要通过将标志 `cudaHostAllocPortable`传递给`cudaHostAlloc()`来分配`block`，或者通过将标志 `cudaHostRegisterPortable`传递给`cudaHostRegister()`来锁定页面。
 
 <span id="Title-3.2.6.2"></span>
 
@@ -1378,7 +1378,7 @@ __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_pe
 
 &emsp;&emsp;为了能够检索到任何映射的页面锁定内存的`device`指针，在执行任何其他CUDA调用之前，必须通过使用`cudaDeviceMapHost`标志调用`cudaSetDeviceFlags()`来启用页面锁定内存映射。否则，`cudaHostGetDevicePointer()`将返回错误。
 
-&emsp;&emsp;如果`device`不支持映射的页锁定`host`内存，`cudaHostGetDevicePointer()`也会返回一个错误。应用程序可以通过检查`canMapHostMemory` `device`属性(请参阅[设备枚举](#Title-3.2.9.1))来查询此功能，对于支持映射的页锁定`host`内存的设备，该属性等于1。
+&emsp;&emsp;如果`device`不支持映射的页锁定`host`内存，`cudaHostGetDevicePointer()`也会返回一个错误。应用程序可以通过检查`canMapHostMemory` `device`属性(请参阅[`device`枚举](#Title-3.2.9.1))来查询此功能，对于支持映射的页锁定`host`内存的`device`，该属性等于1。
 
 &emsp;&emsp;请注意，从`host`或其他`device`的角度来看，在映射的页锁定内存上操作的原子函数(请参见[原子函数](#Title-7.14))不是原子函数。
 
@@ -1390,24 +1390,502 @@ __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_pe
 
 <span id="Title-3.2.7.1"></span>
 
-#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#memory-fence-interference"> 3.2.7.1、内存栅栏干扰</a>
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#memory-fence-interference"> 3.2.7.1、内存`fence`干扰</a>
+
+&emsp;&emsp;一些CUDA应用程序可能会出现性能下降的情况，原因是内存`fence`/刷新操作等待的事务比CUDA内存一致性模型所需的更多。
+
+<span id="Table-3.2"></span>
+
+<table class="table-no-stripes docutils align-default">
+<colgroup>
+<col style="width: 59%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<tbody>
+<tr class="row-odd">
+<td>
+<div class="highlight-c++ notranslate">
+<div class="highlight"><pre><span></span><span class="n">__managed__</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="n">__device__</span><span class="w">  </span><span class="n">cuda</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">cuda</span><span class="o">::</span><span class="n">thread_scope_device</span><span class="o">&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="n">__managed__</span><span class="w"> </span><span class="n">cuda</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span><span class="w"> </span><span class="n">cuda</span><span class="o">::</span><span class="n">thread_scope_system</span><span class="o">&gt;</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even">
+<td>
+<p>Thread 1 (SM)</p>
+<div class="highlight-c++ notranslate">
+<div class="highlight"><pre><span></span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+<span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+</td>
+<td>
+<p>Thread 2 (SM)</p>
+<div class="highlight-c++ notranslate">
+<div class="highlight"><pre><span></span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="n">assert</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"></span>
+</pre></div>
+</div>
+</td>
+<td>
+<p>Thread 3 (CPU)</p>
+<div class="highlight-c++ notranslate">
+<div class="highlight"><pre><span></span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="n">assert</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+
+&emsp;&emsp;考虑上面的例子。CUDA内存一致性模型保证断言的条件为真，因此在从线程2写到b之前，线程1对x的写操作必须对线程3可见。
+
+&emsp;&emsp;由释放和获取a所提供的内存顺序只能使x对线程2而不是线程3可见，因为它是一个`device`作用域操作。因此，发布和获取b所提供的系统范围排序需要确保不仅线程2本身发出的写操作对线程3可见，而且对线程2可见的其他线程的写操作也是可见的。这就是所谓的累积性。由于GPU在执行时无法知道哪些写操作在源级别已经保证可见，哪些写操作只能通过偶然计时才可见，因此它必须为`in-flight`中内存操作建立一个保守的广泛网络。
+
+&emsp;&emsp;这有时会导致干扰：因为GPU正在等待内存操作，所以在源代码级别不需要这样做，所以`fence`/刷新可能会花费比必要时间更长的时间。
+
+&emsp;&emsp;注意，在代码中，`fence`可以像示例中那样显式地以内部特性或原子的形式出现，也可以隐式地实现同步-与任务边界处的关系。
+
+&emsp;&emsp;常见的例子是当一个`kernel`在本地GPU内存中执行计算时，一个并行`kernel`(例如来自`NCCL`)正在执行与对等体的通信。完成后，本地`kernel`将隐式刷新其写操作，以满足任何与下游工作的同步关系。这可能完全或部分地不必要地等待来自通信`kernel`的较慢的nvlink或PCIe写入。
 
 <span id="Title-3.2.7.2"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#isolating-traffic-with-domains"> 3.2.7.2、用域隔离流量</a>
 
-<span id="Title-3.2.7.2"></span>
+&emsp;&emsp;从`Hopper`架构GPU和CUDA12.0开始，内存同步域特性提供了一种减轻这种干扰的方法。作为代码显式帮助的交换，GPU可以通过`fence`操作减少网络广播。每个`kernel`启动都有一个域ID。写和`fence`都用ID标记，`fence`只会命令与`fence`的域相匹配的写。在并发计算与通信的例子中，通信`kernel`可以放置在不同的域中。使用域时，
+
+&emsp;&emsp;代码必须遵守**在同一 GPU 上不同域之间进行排序或同步需要系统范围隔离的规则**。在域中，`device`范围范围隔离仍然是足够的。这对于累积性是必要的，因为一个`kernel`的写操作不会被另一个域中的`kernel`发出的`fence`所包围。实质上，通过确保跨域流量提前到达系统范围，可以满足累积性。
+
+&emsp;&emsp;注意，这会修改`thread_scope_device`的定义。但是，由于`kernel`将默认为域0(如下所述) ，因此维护了向下兼容。
+
+<span id="Title-3.2.7.3"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#using-domains-in-cuda"> 3.2.7.3、在 CUDA 中使用域</a>
+
+&emsp;&emsp;域可以通过新的启动属性`cudaLaunchAttributeMemSyncDomain`和`cudaLaunchAttributeMemSyncDomainMap`访问。前者在逻辑域`CudaLaunchMemSyncDomainDefault`和`CudaLaunchMemcDomainRemote`之间进行选择，后者提供从逻辑域到物理域的映射。远程域用于执行远程内存访问的`kernel`，以便将它们的内存通信与本地`kernel`隔离开来。但是请注意，特定域的选择并不影响`kernel`合法执行的内存访问。
+
+&emsp;&emsp;可以通过`device`属性`cudaDevAttrMemSyncDomainCount`查询域计数。`Hopper`有4个域。为了方便便携式代码，域功能可以在所有`device`上使用，CUDA将在`Hopper`之前报告1。
+
+&emsp;&emsp;拥有逻辑域可以简化应用程序组合。单个`kernel`在栈的低级别启动，比如从`NCCL`启动，可以选择语义逻辑域，而不必关心周围的应用程序体系结构。更高的级别可以使用映射来引导逻辑域。未设置时，逻辑域默认为默认域，默认映射为默认域映射为0，远端域映射为1(对于1个以上域的gpu)。特定的库可以用CUDA12.0及更高版本中的远程域标记启动; 例如，`NCCL2.16`将这样做。总之，这为普通应用程序提供了一种开箱即用的有益使用模式，无需在其他组件、框架或应用程序级别更改代码。另一种使用模式(例如在使用`nvshmem`的应用程序中或者没有明确的`kernel`类型分离的应用程序中)可以是对并行流进行分区。流A可以将逻辑域映射到物理域0，流B映射到物理域1，以此类推。
+
+<span id="code-3.14"></span>
+
+```C++
+// Example of launching a kernel with the remote logical domain
+cudaLaunchAttribute domainAttr;
+domainAttr.id = cudaLaunchAttrMemSyncDomain;
+domainAttr.val = cudaLaunchMemSyncDomainRemote;
+cudaLaunchConfig_t config;
+// Fill out other config fields
+config.attrs = &domainAttr;
+config.numAttrs = 1;
+cudaLaunchKernelEx(&config, myKernel, kernelArg1, kernelArg2...);
+```
+
+<span id="code-3.15"></span>
+
+```C++
+// Example of setting a mapping for a stream
+// (This mapping is the default for streams starting on Hopper if not
+// explicitly set, and provided for illustration)
+cudaLaunchAttributeValue mapAttr;
+mapAttr.memSyncDomainMap.default_ = 0;
+mapAttr.memSyncDomainMap.remote = 1;
+cudaStreamSetAttribute(stream, cudaLaunchAttrMemSyncDomainMap, &mapAttr);
+```
+
+<span id="code-3.16"></span>
+
+```C++
+// Example of mapping different streams to different physical domains, ignoring
+// logical domain settings
+cudaLaunchAttributeValue mapAttr;
+mapAttr.memSyncDomainMap.default_ = 0;
+mapAttr.memSyncDomainMap.remote = 0;
+cudaStreamSetAttribute(streamA, cudaLaunchAttrMemSyncDomainMap, &mapAttr);
+mapAttr.memSyncDomainMap.default_ = 1;
+mapAttr.memSyncDomainMap.remote = 1;
+cudaStreamSetAttribute(streamB, cudaLaunchAttrMemSyncDomainMap, &mapAttr);
+```
+
+&emsp;&emsp;与其他启动属性一样，这些属性在CUDA流、使用`cudaLaunchKernelEx`的单独启动以及CUDA图中的`kernel`节点上统一暴露。典型的使用方式是在流级别设置映射，在启动级别设置逻辑域(或者包括流使用的一部分) ，如上所述。
+
+&emsp;&emsp;在流捕获期间，这两个属性都被复制到`graph`节点。`graph`从节点本身获取这两个属性，本质上是指定物理域的间接方法。在`graph`的执行中，不使用启动到的流上设置的与领域相关的属性。
 
 <span id="Title-3.2.8"></span>
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#asynchronous-concurrent-execution"> 3.2.8、异步并发执行</a>
 
+&emsp;&emsp;CUDA将下列操作公开为可以相互并行操作的独立任务:
+* 在`host`上计算；
+* 在`device`上计算；
+* 内存从`host`传输到`device`；
+* 内存从`device`传输到`host`；
+* 在给定`device`的内存内进行内存传输；
+* `device`间的内存传输。
+
+&emsp;&emsp;这些操作之间达到的并发水平将取决于下面描述的`device`的特性集和计算能力。
+
+<span id="Title-3.2.8.1"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-execution-between-host-and-device"> 3.2.8.1、`host`和`device`之间的并发执行</a>
+
+&emsp;&emsp;并发`host`执行是通过异步库函数实现的，异步库函数在设备完成请求的任务之前将控制返回给`host`线程。使用异步调用，当适当的`device`资源可用时，许多`device`操作可以排队等待由CUDA`driver`执行。这减轻了`host`线程管理`device`的大部分责任，使其可以自由地执行其他任务。下列`driver`操作对于`host`是异步的:
+
+* `kernel`启动；
+* 单个`device`内存中的内存拷贝；
+* 内存从`host`拷贝到内存64KB或更小的内存`block`的`device`；
+* 由以`Async`为后缀的函数执行的内存拷贝；
+* 内存设置函数调用。
+
+&emsp;&emsp;通过将`CUDA_LAUNCH_BLOCKING`环境变量设置为1，程序员可以在全面禁用在系统上运行的所有CUDA应用程序的`kenel`启动异步性。此特性仅用于调试目的，不应用作使生产软件可靠运行的方法。
+
+&emsp;&emsp;如果通过探查器(`Nsight`、`Visual Profiler`)收集硬件计数器，则`kenel`启动是同步的，除非启用了并发`kenel`剖析。如果涉及不锁页的`host`内存，`Async`内存拷贝也可能是同步的。
+
+<span id="Title-3.2.8.2"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-kernel-execution"> 3.2.8.2、并发`kernel`执行</a>
+
+&emsp;&emsp;一些具有2.x或更高计算能力的`device`可以同时执行多个`kernel`。应用程序可以通过检查`concurrentKernels` `device`属性(参见[`device`枚举](#Title-3.2.9.1))来查询此功能，对于支持该功能的`device`，该属性等于1。
+
+&emsp;&emsp;`device`可以并发执行的最大`kernel`启动次数取决于其计算能力，[如表](#table-16.2)所示。
+
+&emsp;&emsp;来自一个CUDA`context`的`kernel`不能与来自另一个CUDA`context`的`kernel`并发执行。GPU可以进行时间切片，为每个`context`提供向前的进度。如果用户希望在`SM`上同时从多个进程运行`kernel`，则必须启用`MPS`。
+
+&emsp;&emsp;使用许多`textures`或大量本地内存的`kernel`不太可能与其他`kernel`并发执行。
+
+<span id="Title-3.2.8.3"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#overlap-of-data-transfer-and-kernel-execution"> 3.2.8.3、数据传输和`kernel`执行的重叠</a>
+
+&emsp;&emsp;一些`device`可以在`kernel`执行的同时执行到GPU或从GPU的异步内存复制。应用程序可以通过检查异步工程计数`device`属性(请参阅[`device`枚举](#Title-3.2.9.1))来查询此功能，对于支持该功能的`device`，该属性大于零。如果复制涉及到``host`内存，那么它必须是页锁定的。
+
+&emsp;&emsp;还可以与`kernel`执行(在支持`concurrentKernel`设备属性的`device`上)和/或与`device`之间的拷贝(对于支持`syncEngineCount`属性的`device`)同时执行`device`内部拷贝。使用标准内存复制函数启动`device`内部拷贝，目标和源地址位于同一`device`上。
+
 <span id="Title-3.2.8.4"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-data-transfers"> 3.2.8.4、并发数据传输</a>
 
+&emsp;&emsp;一些具有2.x或更高计算能力的`device`可以与`device`之间的拷贝重叠。应用程序可以通过检查`syncEngineCount`设备属性(请参阅[`device`枚举](#Title-3.2.9.1))来查询此功能，对于支持该功能的`device`，该属性等于2。为了重叠，传输中涉及的任何`host`内存都必须是页锁定的。
+
+<span id="Title-3.2.8.5"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#streams"> 3.2.8.5、流</a>
+
+&emsp;&emsp;应用程序通过流管理上述并发操作。流是按顺序执行的一系列命令(可能由不同的`host`线程发出)。另一方面，不同的流可以相对于另一个或并发地乱序执行它们的命令；这种行为不能得到保证，因此不应该依赖于其正确性(例如，`kernel`间通信是未定义的)。当满足命令的所有依赖项时，可以执行在流上发出的命令。依赖项可以是先前在同一流上启动的命令，也可以是来自其他流的依赖项。同步调用的成功完成保证了所有启动的命令都已完成。
+
+<span id="Title-3.2.8.5.1"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#creation-and-destruction"> 3.2.8.5.1、申请和释放</a>
+
+&emsp;&emsp;通过创建一个流对象并将其指定为`kernel`启动和`host`<->`device`内存复制序列的流参数，可以定义一个流。[代码示例](#code-3.17)创建两个流，并在页锁定内存中分配一个float数组hostPtr。
+
+<span id="code-3.17"></span>
+
+```C++
+cudaStream_t stream[2];
+for (int i = 0; i < 2; ++i)
+    cudaStreamCreate(&stream[i]);
+float* hostPtr;
+cudaMallocHost(&hostPtr, 2 * size);
+```
+
+&emsp;&emsp;[代码示例](#code-3.18)将每个流定义为从`host`到`device`的一个内存拷贝、从`device`到`host`的一个`kernel`启动和一个内存拷贝的序列:
+
+<span id="code-3.18"></span>
+
+```C++
+for (int i = 0; i < 2; ++i)
+{
+    cudaMemcpyAsync(inputDevPtr + i * size, hostPtr + i * size,
+                    size, cudaMemcpyHostToDevice, stream[i]);
+    MyKernel <<<100, 512, 0, stream[i]>>>
+          (outputDevPtr + i * size, inputDevPtr + i * size, size);
+    cudaMemcpyAsync(hostPtr + i * size, outputDevPtr + i * size,
+                    size, cudaMemcpyDeviceToHost, stream[i]);
+}
+```
+
+&emsp;&emsp;每个流将其输入数组`hostPtr`的部分复制到`device`内存中的数组`inputDevPtr`，通过调用`MyKernel()`在`device`上处理`inputDevPtr`，并将结果`outputDevPtr`复制回`hostPtr`的相同部分。[重叠行为](#Title-3.2.8.5.5)描述了这个示例中流如何根据`device`的性能重叠。请注意，`hostPtr`必须指向页面锁定的`host`内存，否则会发生任何重叠。
+
+&emsp;&emsp;通过调用`cudaStreamDestroy()`释放流。
+
+<span id="Title-3.2.8.5.1"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#creation-and-destruction"> 3.2.8.5.1、申请和释放</a>
+
+<span id="code-3.19"></span>
+
+```C++
+for (int i = 0; i < 2; ++i)
+    cudaStreamDestroy(stream[i]);
+```
+
+&emsp;&emsp;如果`device`在调用`cudaStreamDestroy()`时仍然在流中工作，那么该函数将立即返回，一旦`device`完成流中的所有工作，与流相关的资源将自动释放。
+
+<span id="Title-3.2.8.5.2"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#default-stream"> 3.2.8.5.2、默认流</a>
+
+&emsp;&emsp;没有指定任何流参数的`kennel`启动和`host<->device`内存拷贝，或者等效地将流参数设置为零的拷贝，都会发送给默认流。因此，它们是按顺序执行的。
+
+&emsp;&emsp;对于使用`--default-stream per-thread`编译标志编译的代码(或者在包含CUDA头之前定义`CUDA_API_PER_THREAD_DEFAULT_STREAM`宏的代码(CUDA.h 和CUDA_runtime.h)) ，默认流是常规流，每个`host`线程都有自己的默认流。
+
+> __注意__
+> #define CUDA_API_PER_THREAD_DEFAULT_STREAM 1不能用于在`nvcc`编译代码时启用这种行为，因为`nvcc`隐式地在`cuda_runtime.h`顶部包含翻译单元。在这种情况下，需要使用`--default-stream per-thread`编译标志，或者需要使用`CUDA_API_PER_THREAD_DEFAULT_STREAM`宏定义`CUDA_API_PER_THREAD_DEFAULT_STREAM=1`编译标志。
+
+&emsp;&emsp;对于使用`--default-stream legacy`遗留编译标志编译的代码，默认流是一个称为NULL流的特殊流，每个`device`都有一个用于所有`host`线程的NULL流。NULL流是特殊的，因为它会导致隐式同步，如[隐式同步](#Title-3.2.8.5.4)中所述。
+
+&emsp;&emsp;对于没有指定`--default-stream`编译标志而进行编译的代码，假定`--default-stream`遗留代码为默认代码。
+
+<span id="Title-3.2.8.5.3"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#explicit-synchronization"> 3.2.8.5.3、显式同步</a>
+
+&emsp;&emsp;有多种方法可以显式地彼此同步流。
+
+&emsp;&emsp;`cudaDeviceSynchronize()`等待，直到所有`host`线程的所有流中的所有前面的命令都完成。
+
+&emsp;&emsp;`cudaDeviceSynchronize()`接受一个流作为参数，并等待给定流中的所有前面的命令完成。它可用于将`host`与特定流同步，从而允许其他流继续在`device`上执行。
+
+&emsp;&emsp;`cudaStreamWaitEvent()`接受一个流和一个事件作为参数(有关事件的描述，请参阅[事件](#Title-3.2.8.8)) ，并使得所有添加到给定流中的命令在调用 `cudaStreamWaitEvent()`之后延迟执行，直到给定事件完成。
+
+&emsp;&emsp;`cudaStreamQuery()`为应用程序提供了一种知道流中所有前面的命令是否已经完成的方法。
+
+<span id="Title-3.2.8.5.4"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#implicit-synchronization"> 3.2.8.5.4、隐式同步</a>
+
+&emsp;&emsp;如果主线程在两个命令流之间发出以下任何一个操作，则来自不同流的两个命令不能并发运行:
+
+* 锁定页面的`host`内存分配；
+* `device`内存分配；
+* 设置`device`内存；
+* 两个地址之间到同一`device`内存的内存拷贝；
+* 任何到NULL流的CUDA命令；
+* [计算能力7.x](#Title-16.6)中描述的L1/共享内存配置之间的切换。
+
+&emsp;&emsp;需要依赖性检查的操作包括与被检查的启动相同的流中的任何其他命令，以及对该流上的任何`cudaStreamQuery()`的调用。因此，应用程序应该遵循以下指导原则，以提高并发`kernel`执行的潜力:
+
+* 所有独立操作应在独立操作之前签发；
+* 任何类型的同步都应该尽可能延迟。
+
+<span id="Title-3.2.8.5.5"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#overlapping-behavior"> 3.2.8.5.5、重叠行为</a>
+
+&emsp;&emsp;两个流之间的执行重叠的数量取决于命令发送到每个流的顺序，以及`device`是否支持数据传输和`kernel`执行的重叠(参见[数据传输和内核执行的重叠](#Title-3.2.8.5)) ，并发`kernel`执行(参见[并发内核执行](#Title-3.2.8.2)) ，和/或并发数据传输(参见[并发数据传输](#Title-3.2.8.4))。
+
+&emsp;&emsp;例如，在不支持并发数据传输的`device`上，[申请和释放](#Title-3.2.5.8.1)代码样本的两个流根本不重叠，因为从`host`到`device`的内存拷贝在从`device`到主机的内存拷贝发布到流[0]之后发布到流[1] ，所以它只能在从`device`到`host`发布到流[0]的内存拷贝完成之后才能启动。如果以下方式重写代码(并假设`device`支持数据传输和`kernel`执行的重叠)。
+
+<span id="code-3.20"></span>
+
+```C++
+for (int i = 0; i < 2; ++i)
+    cudaMemcpyAsync(inputDevPtr + i * size, hostPtr + i * size, size, cudaMemcpyHostToDevice, stream[i]);
+for (int i = 0; i < 2; ++i)
+    MyKernel<<<100, 512, 0, stream[i]>>>(outputDevPtr + i * size, inputDevPtr + i * size, size);
+for (int i = 0; i < 2; ++i)
+    cudaMemcpyAsync(hostPtr + i * size, outputDevPtr + i * size, size, cudaMemcpyDeviceToHost, stream[i]);
+```
+
+&emsp;&emsp;然后从`host`到发布到流[1]的`device`的内存拷贝与发布到流[0]的内核启动重叠。
+
+&emsp;&emsp;在确实支持并发数据`device`的设备上，[申请和释放](#Title-3.2.5.8.1)代码样本的两个流确实重叠: 从`host`到`device`发布到流[1]的内存拷贝与从`device`到`host`发布到流[0]的内存拷贝重叠，甚至与发布到流[0]的`kernel`启动重叠(假设`device`支持数据传输和`kernel`执行的重叠)。
+
+<span id="Title-3.2.8.5.6"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#host-functions-callbacks"> 3.2.8.5.6、`host`函数(回调)</a>
+
+&emsp;&emsp;`runtime`提供了一种方法，可以通过`cudaLaunchHostFunc()`在流的任何位置插入CPU函数调用。一旦在回调完成之前向流发出的所有命令都在`host`上执行所提供的函数。
+
+&emsp;&emsp;[代码示例](#code-3.20)将`host`函数`MyCallback`添加到两个流中的每一个，在每个流中发出一个`host`到`device`内存拷贝、一个`kernel`启动和一个`device`到`host`内存拷贝之后。
+
+<span id="code-3.20"></span>
+
+```C++
+void CUDART_CB MyCallback(cudaStream_t stream, cudaError_t status, void *data)
+{
+    printf("Inside callback %d\n", (size_t)data);
+}
+...
+for (size_t i = 0; i < 2; ++i)
+{
+    cudaMemcpyAsync(devPtrIn[i], hostPtr[i], size,cudaMemcpyHostToDevice, stream[i]);
+    MyKernel<<<100, 512, 0, stream[i]>>>(devPtrOut[i], devPtrIn[i], size);
+    cudaMemcpyAsync(hostPtr[i], devPtrOut[i], size, cudaMemcpyDeviceToHost, stream[i]);
+    cudaLaunchHostFunc(stream[i], MyCallback, (void*)i);
+}
+```
+
+&emsp;&emsp;在宿主函数之后的流中发出的命令不会在函数完成之前开始执行。
+
+&emsp;&emsp;排队到流中的`host`函数不能(直接或间接)进行CUDA API调用，因为如果进行这样的调用导致死锁，它可能最终等待自己。
+
+<span id="Title-3.2.8.5.7"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#stream-priorities"> 3.2.8.5.7、流优先级</a>
+
+&emsp;&emsp;流的相对优先级可以在创建的时候使用`cudaStreamCreateWithRank()`指定。可以使用`cudaDeviceGetStreamPriorityRange()`函数获得允许优先级的范围，按(最高优先级，最低优先级)排序。在`runtime`，高优先级流中的挂起工作优先于低优先级流中的挂起工作。
+
+&emsp;&emsp;[代码示例](#code-3.21)获取当前`device`的允许优先级范围，并创建具有最高和最低可用优先级的流。
+
+<span id="code-3.21"></span>
+
+```C++
+// get the range of stream priorities for this device
+int priority_high, priority_low;
+cudaDeviceGetStreamPriorityRange(&priority_low, &priority_high);
+// create streams with highest and lowest available priorities
+cudaStream_t st_high, st_low;
+cudaStreamCreateWithPriority(&st_high, cudaStreamNonBlocking, priority_high);
+cudaStreamCreateWithPriority(&st_low, cudaStreamNonBlocking, priority_low);
+```
+
+<span id="Title-3.2.8.6"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#programmatic-dependent-launch-and-synchronization"> 3.2.8.6、与程序相关的启动和同步</a>
+
+&emsp;&emsp;程序相关启动机制允许在相同CUDA流中所依赖的主`kernel`完成执行之前启动相关的`secondary kernel`。从计算能力为9.0的`device`开始，当`secondary kernel`可以完成不依赖于`primary kernel`结果的重要工作时，这种技术可以提供性能优势。
+
+<span id="Title-3.2.8.6.1"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#background"> 3.2.8.6.1、背景资料</a>
+
+&emsp;&emsp;CUDA应用程序利用GPU启动和执行多个`kernel`。一个典型的GPU活动时间线[如图](#picture-gpu-activity)所示。
+
+<span id="picture-gpu-activity"></span>
+
+<div> <!--块级封装-->
+    <center> <!--将图片和文字居中-->
+    <img src="images/gpu-activity.png"
+         style="zoom:200%"/>
+    <br> <!--换行-->
+    </center>
+</div>
+
+[GPU activity timeline](#picture-gpu-activity)
+
+&emsp;&emsp;在这里，`secondary_kernel`是在`primary_kernel`完成其执行之后启动的。串行化的执行通常是必要的，因为`secondary_kernel`依赖于`primary_kernel`生成的结果数据。如果`secondary_kernel`对`primary_kernel`没有依赖关系，那么可以通过使用CUDA流同时启动它们。即使`secondary_kernel`依赖于`primary_kernel`，也存在一些并发执行的可能性。例如，几乎所有的`kernel`都有某种类型的前导部分，在这个部分中执行缓冲区归零或加载常量值等任务。
+
+<span id="picture-secondary-kernel-preamble"></span>
+
+<div> <!--块级封装-->
+    <center> <!--将图片和文字居中-->
+    <img src="images/secondary-kernel-preamble.png"
+         style="zoom:200%"/>
+    <br> <!--换行-->
+    </center>
+</div>
+
+[Preamble section of `secondary_kernel`](#picture-secondary-kernel-preamble)
+
+&emsp;&emsp;[上图](#picture-secondary-kernel-preamble)展示了在不影响应用程序的情况下可以并发执行的`secondary_kernel`部分。请注意，并发启动还允许我们在`primary_kernel`执行之后隐藏`secondary_kernel`的启动延迟。
+
+<span id="picture-preamble-overlap"></span>
+
+<div> <!--块级封装-->
+    <center> <!--将图片和文字居中-->
+    <img src="images/preamble-overlap.png"
+         style="zoom:200%"/>
+    <br> <!--换行-->
+    </center>
+</div>
+
+[Concurrent execution of `primary_kernel` and `secondary_kernel`](#picture-preamble-overlap)
+
+&emsp;&emsp;[上图](#picture-preamble-overlap)展示了`secondary_kernel`的并发启动和执行可以通过使用程序相关启动来实现。
+
+&emsp;&emsp;程序相关启动介绍了对CUDA`kernel`启动API的更改，如下一节所述。这些API至少需要计算能力9.0来提供重叠执行。
+
+<span id="Title-3.2.8.6.2"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#api-description"> 3.2.8.6.2、API描述</a>
+
+&emsp;&emsp;在程序相关启动中，`primary kernel`和`secondary kernel`在相同的CUDA流中启动。当`primary kernel`准备好启动`secondary kernel`时，`primary kernel`应该使用所有线程`block`执行 `cudaTriggerProgrammaticLaunchCompletion`。`secondary kernel`必须使用如下所示的可扩展启动API启动。
+
+<span id="code-3.22"></span>
+
+```C++
+__global__ void primary_kernel() {
+   // Initial work that should finish before starting secondary kernel
+
+   // Trigger the secondary kernel
+   cudaTriggerProgrammaticLaunchCompletion();
+
+   // Work that can coincide with the secondary kernel
+}
+
+__global__ void secondary_kernel()
+{
+   // Independent work
+
+   // Will block until all primary kernels the secondary kernel is dependent on have completed and flushed results to global memory
+   cudaGridDependencySynchronize();
+
+   // Dependent work
+}
+
+cudaLaunchAttribute attribute[1];
+attribute[0].id = cudaLaunchAttributeProgrammaticStreamSerialization;
+attribute[0].val.programmaticStreamSerializationAllowed = 1;
+configSecondary.attrs = attribute;
+configSecondary.numAttrs = 1;
+
+primary_kernel<<<grid_dim, block_dim, 0, stream>>>();
+cudaLaunchKernelEx(&configSecondary, secondary_kernel);
+```
+
+&emsp;&emsp;当使用`cudaLaunchAttributeProgrammaticStreamSerialization`属性启动`secondary kernel`时，CUDA`driver`程序可以安全地提前启动`secondary kernel`，而不必等待`primary kernel`完成并刷新内存后再启动`secondary kernel`。CUDA`driver`程序可以在所有主线程`block`启动并执行`cudaTriggerProgrammaticLaunchCompletion`时启动`secondary kernel`。
+
+&emsp;&emsp;在这两种情况下，`secondary`线程`block`都可能在主`kernel`写入的数据可见之前启动。因此，当`secondary kernel`配置为程序相关启动时，它必须始终使用`cudaGridDependencySynchronize`或其他方法来验证来自`primary kernel`的结果数据是否可用。
+
+&emsp;&emsp;请注意，这些方法为`primary kernel`和`secondary kernel`提供了并发执行的机会，但是这种行为是机会主义的，并不能保证导致并发`kernel`执行。以这种方式依赖并发执行是不安全的，可能导致死锁。
+
+<span id="Title-3.2.8.7"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#secondary-kernel-preamble"> 3.2.8.7、CUDA Graghs</a>
+
+&emsp;&emsp;CUDA `Graghs`为CUDA中的工作提交提供了一个新的模型。`Graghs`是由依赖关系连接的一系列操作，例如`kernel`启动，这些依赖关系与其执行分开定义。
+
+<span id="Title-3.2.8.7.1"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#graph-structure"> 3.2.8.7.1、`Graghs`结构</a>
+
+<span id="Title-3.2.8.7.2"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#creating-a-graph-using-graph-apis"> 3.2.8.7.2、使用`Graghs`API创建`Graghs`</a>
+
+<span id="Title-3.2.8.7.3"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#creating-a-graph-using-stream-capture"> 3.2.8.7.3、使用`Stream Capture`API创建`Graghs`</a>
+
+<span id="Title-3.2.8.7.4"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-user-objects"> 3.2.8.7.4、CUDA 用户对象</a>
+
+<span id="Title-3.2.8.7.5"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#updating-instantiated-graphs"> 3.2.8.7.5、更新实例化`Graghs`</a>
+
+<span id="Title-3.2.8.7.6"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#using-graph-apis"> 3.2.8.7.6、使用`Graghs`APIs</a>
+
+<span id="Title-3.2.8.7.7"></span>
+
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-graph-launch"> 3.2.8.7.7、`device` `Graghs`启动</a>
+
+<span id="Title-3.2.8.8"></span>
+
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#events"> 3.2.8.8、事件</a>
 
 
 <span id="Title-3.2.9"></span>
@@ -1416,7 +1894,7 @@ __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_pe
 
 <span id="Title-3.2.9.1"></span>
 
-### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-enumeration"> 3.2.9.1、设备枚举</a>
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-enumeration"> 3.2.9.1、`device`枚举</a>
 
 <span id="Title-3.2.9.2"></span>
 
@@ -1476,7 +1954,7 @@ __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_pe
 
 <span id="Title-7.27"></span>
 
-## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#asynchronous-data-copies"> 7.27、异步数据副本</a>
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#asynchronous-data-copies"> 7.27、异步数据拷贝</a>
 
 <span id="Title-7.35"></span>
 
@@ -1522,9 +2000,589 @@ __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_pe
 
 # <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capabilities"> 16、计算能力</a>
 
+<span id="Title-16.2"></span>
+
+### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#features-and-technical-specifications"> 16.2、特点及技术规格</a>
+
+<span id="table-16.1"></span>
+
+<table class="small table-no-stripes longtable docutils align-default" id="features-and-technical-specifications-feature-support-per-compute-capability">
+<caption>
+<span class="caption-text">Feature Support per Compute Capability</span><a class="headerlink" href="#features-and-technical-specifications-feature-support-per-compute-capability" title="Permalink to this table"></a>
+</caption>
+<colgroup>
+<col style="width: 79%">
+<col style="width: 6%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 3%">
+</colgroup>
+<thead>
+<tr class="row-odd">
+<th class="head"><p>Feature Support</p></th>
+<th class="head" colspan="6"><p>Compute Capability</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even">
+<td><p>(Unlisted features are supported for all compute capabilities)</p></td>
+<td><p>5.0, 5.2</p></td>
+<td><p>5.3</p></td>
+<td><p>6.x</p></td>
+<td><p>7.x</p></td>
+<td><p>8.x</p></td>
+<td><p>9.0</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Atomic functions operating on 32-bit integer values in global memory (<a class="reference external" href="index.html#atomic-functions">Atomic Functions</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Atomic functions operating on 32-bit integer values in shared memory (<a class="reference external" href="index.html#atomic-functions">Atomic Functions</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Atomic functions operating on 64-bit integer values in global memory (<a class="reference external" href="index.html#atomic-functions">Atomic Functions</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Atomic functions operating on 64-bit integer values in shared memory (<a class="reference external" href="index.html#atomic-functions">Atomic Functions</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Atomic addition operating on 32-bit floating point values in global and shared memory (<a class="reference external" href="index.html#atomicadd">atomicAdd()</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Atomic addition operating on 64-bit floating point values in global memory and shared memory (<a class="reference external" href="index.html#atomicadd">atomicAdd()</a>)</p></td>
+<td colspan="2"><p>No</p></td>
+<td colspan="4"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Atomic addition operating on float2 and float4 floating point vectors in global memory (<a class="reference external" href="index.html#atomicadd">atomicAdd()</a>)</p></td>
+<td colspan="5"><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Warp vote functions (<a class="reference external" href="index.html#warp-vote-functions">Warp Vote Functions</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Memory fence functions (<a class="reference external" href="index.html#memory-fence-functions">Memory Fence Functions</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Synchronization functions (<a class="reference external" href="index.html#synchronization-functions">Synchronization Functions</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Surface functions (<a class="reference external" href="index.html#surface-functions">Surface Functions</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Unified Memory Programming (<a class="reference external" href="index.html#um-unified-memory-programming-hd">Unified Memory Programming</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Dynamic Parallelism (<a class="reference external" href="index.html#cuda-dynamic-parallelism">CUDA Dynamic Parallelism</a>)</p></td>
+<td colspan="6"><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Half-precision floating-point operations: addition, subtraction, multiplication, comparison, warp shuffle functions, conversion</p></td>
+<td><p>No</p></td>
+<td colspan="5"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Bfloat16-precision floating-point operations: addition, subtraction, multiplication, comparison, warp shuffle functions, conversion</p></td>
+<td colspan="4"><p>No</p></td>
+<td colspan="2"><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Tensor Cores</p></td>
+<td colspan="3"><p>No</p></td>
+<td colspan="3"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Mixed Precision Warp-Matrix Functions (<a class="reference external" href="index.html#wmma">Warp matrix functions</a>)</p></td>
+<td colspan="3"><p>No</p></td>
+<td colspan="3"><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Hardware-accelerated <code class="docutils literal notranslate"><span class="pre">memcpy_async</span></code> (<a class="reference external" href="index.html#memcpy-async-pipeline">Asynchronous Data Copies using cuda::pipeline</a>)</p></td>
+<td colspan="4"><p>No</p></td>
+<td colspan="2"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Hardware-accelerated Split Arrive/Wait Barrier (<a class="reference external" href="index.html#aw-barrier">Asynchronous Barrier</a>)</p></td>
+<td colspan="4"><p>No</p></td>
+<td colspan="2"><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>L2 Cache Residency Management (<a class="reference external" href="index.html#l2-access-intro">Device Memory L2 Access Management</a>)</p></td>
+<td colspan="4"><p>No</p></td>
+<td colspan="2"><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>DPX Instructions for Accelerated Dynamic Programming</p></td>
+<td colspan="5"><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Distributed Shared Memory</p></td>
+<td colspan="5"><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Thread Block Cluster</p></td>
+<td colspan="5"><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Tensor Memory Accelerator (TMA) unit</p></td>
+<td colspan="5"><p>No</p></td>
+<td><p>Yes</p></td>
+</tr>
+</tbody>
+</table>
+<p>Note that the KB and K units used in the following table correspond to 1024 bytes (i.e., a KiB) and 1024 respectively.</p>
+
+<span id="table-16.2"></span>
+
+<table class="small table-no-stripes longtable colwidths-given docutils align-default" id="features-and-technical-specifications-technical-specifications-per-compute-capability">
+<caption>
+<span class="caption-text">Technical Specifications per Compute Capability</span><a class="headerlink" href="#features-and-technical-specifications-technical-specifications-per-compute-capability" title="Permalink to this table"></a>
+</caption>
+<colgroup>
+<col style="width: 34%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="row-odd">
+<th class="head"></th>
+<th class="head" colspan="14"><p class="centered">
+<strong>Compute Capability</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even">
+<td><p>Technical Specifications</p></td>
+<td><p>5.0</p></td>
+<td><p>5.2</p></td>
+<td><p>5.3</p></td>
+<td><p>6.0</p></td>
+<td><p>6.1</p></td>
+<td><p>6.2</p></td>
+<td><p>7.0</p></td>
+<td><p>7.2</p></td>
+<td><p>7.5</p></td>
+<td><p>8.0</p></td>
+<td><p>8.6</p></td>
+<td><p>8.7</p></td>
+<td><p>8.9</p></td>
+<td><p>9.0</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum number of
+resident grids per device
+(Concurrent Kernel
+Execution)</p></td>
+<td colspan="2"><p>32</p></td>
+<td><p>16</p></td>
+<td><p>128</p></td>
+<td><p>32</p></td>
+<td><p>16</p></td>
+<td><p>128</p></td>
+<td><p>16</p></td>
+<td colspan="6"><p>128</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum dimensionality of
+grid of thread blocks</p></td>
+<td colspan="14"><p>3</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum x -dimension of a
+grid of thread blocks</p></td>
+<td colspan="14"><p>2<sup>31</sup>-1</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum y- or z-dimension
+of a grid of thread
+blocks</p></td>
+<td colspan="14"><p>65535</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum dimensionality of
+thread block</p></td>
+<td colspan="14"><p>3</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum x- or
+y-dimensionality of a
+block</p></td>
+<td colspan="14"><p>1024</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum z-dimension
+of a block</p></td>
+<td colspan="14"><p>64</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum number of
+threads per block</p></td>
+<td colspan="14"><p>1024</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Warp size</p></td>
+<td colspan="14"><p>32</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum number of
+resident blocks per SM</p></td>
+<td colspan="8"><p>32</p></td>
+<td><p>16</p></td>
+<td><p>32</p></td>
+<td colspan="2"><p>16</p></td>
+<td><p>24</p></td>
+<td><p>32</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum number of
+resident warps per SM</p></td>
+<td colspan="8"><p>64</p></td>
+<td><p>32</p></td>
+<td><p>64</p></td>
+<td colspan="3"><p>48</p></td>
+<td><p>64</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum number of
+resident threads per SM</p></td>
+<td colspan="8"><p>2048</p></td>
+<td><p>1024</p></td>
+<td><p>2048</p></td>
+<td colspan="3"><p>1536</p></td>
+<td><p>2048</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Number of 32-bit
+registers per SM</p></td>
+<td colspan="14"><p>64 K</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum number of 32-bit
+registers per thread
+block</p></td>
+<td colspan="2"><p>64 K</p></td>
+<td><p>32 K</p></td>
+<td colspan="2"><p>64 K</p></td>
+<td><p>32 K</p></td>
+<td colspan="8"><p>64 K</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum number of 32-bit
+registers per thread</p></td>
+<td colspan="14"><p>255</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum amount of shared
+memory per SM</p></td>
+<td><p>64 KB</p></td>
+<td><p>96 KB</p></td>
+<td colspan="2"><p>64 KB</p></td>
+<td><p>96 KB</p></td>
+<td><p>64 KB</p></td>
+<td colspan="2"><p>96 KB</p></td>
+<td><p>64 KB</p></td>
+<td><p>164
+KB</p></td>
+<td><p>100
+KB</p></td>
+<td><p>164
+KB</p></td>
+<td><p>100
+KB</p></td>
+<td><p>228
+KB</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum amount of shared
+memory per thread block
+<a class="footnote-reference brackets" href="#fn33" id="id87">32</a></p></td>
+<td colspan="6"><p>48 KB</p></td>
+<td><p>96 KB</p></td>
+<td><p>96 KB</p></td>
+<td><p>64 KB</p></td>
+<td><p>163
+KB</p></td>
+<td><p>99 KB</p></td>
+<td><p>163
+KB</p></td>
+<td><p>99 KB</p></td>
+<td><p>227
+KB</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Number of shared
+memory banks</p></td>
+<td colspan="14"><p>32</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum amount of local
+memory per thread</p></td>
+<td colspan="14"><p>512 KB</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Constant memory size</p></td>
+<td colspan="14"><p>64 KB</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Cache working set per SM
+for constant memory</p></td>
+<td colspan="3"><p>8 KB</p></td>
+<td><p>4 KB</p></td>
+<td colspan="10"><p>8 KB</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Cache  working set per SM
+for texture memory</p></td>
+<td colspan="3"><p>Between 12 KB and 48 KB</p></td>
+<td colspan="3"><p>Between 24 KB and 48 KB</p></td>
+<td colspan="2"><p>32 ~ 128 KB</p></td>
+<td><p>32 or
+64 KB</p></td>
+<td><p>28 KB
+~ 192
+KB</p></td>
+<td><p>28 KB
+~ 128
+KB</p></td>
+<td><p>28 KB
+~ 192
+KB</p></td>
+<td><p>28 KB
+~ 128
+KB</p></td>
+<td><p>28 KB
+~ 256
+KB</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum width for a 1D
+texture reference bound
+to a CUDA array</p></td>
+<td colspan="3"><p>65536</p></td>
+<td colspan="11"><p>131072</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum width for a 1D
+texture reference bound
+to linear memory</p></td>
+<td colspan="3"><p>2<sup>27</sup></p></td>
+<td><p>2<sup>28</sup></p></td>
+<td colspan="2"><p>2<sup>27</sup></p></td>
+<td><p>2<sup>28</sup></p></td>
+<td><p>2<sup>27</sup></p></td>
+<td colspan="6"><p>2<sup>28</sup></p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum width and number
+of layers for a 1D
+layered texture reference</p></td>
+<td colspan="3"><p>16384
+x
+2048</p></td>
+<td colspan="11"><p>32768
+x
+2048</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum width and height
+for a 2D texture
+reference bound to a CUDA
+array</p></td>
+<td colspan="3"><p>65536
+x
+65536</p></td>
+<td colspan="11"><p>131072
+x
+65536</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum width and height
+for a 2D texture
+reference bound to
+linear memory</p></td>
+<td colspan="3"><p>65536
+x
+65536</p></td>
+<td colspan="11"><p>131072
+x
+65000</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum width and height
+for a 2D texture
+reference bound to a CUDA
+array supporting texture
+gather</p></td>
+<td colspan="3"><p>16384
+x
+16384</p></td>
+<td colspan="11"><p>32768
+x
+32768</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum width, height,
+and number of layers for
+a 2D layered texture
+reference</p></td>
+<td colspan="3"><p>16384 x 16384 x 2048</p></td>
+<td colspan="11"><p>32768 x 32768 x 2048</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum width, height,
+and depth for a 3D
+texture reference bound
+to a CUDA array</p></td>
+<td colspan="3"><p>4096 x 4096 x 4096</p></td>
+<td colspan="11"><p>16384 x 16384 x 16384</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum width (and
+height) for a cubemap
+texture reference</p></td>
+<td colspan="3"><p>16384</p></td>
+<td colspan="11"><p>32768</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum width (and
+height) and number of
+layers for a cubemap
+layered texture reference</p></td>
+<td colspan="3"><p>16384
+x
+2046</p></td>
+<td colspan="11"><p>32768
+x
+2046</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum number of
+textures that can be
+bound to a kernel</p></td>
+<td colspan="14"><p>256</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum width for a 1D
+surface reference bound
+to a CUDA array</p></td>
+<td colspan="3"><p>16384</p></td>
+<td colspan="11"><p>32768</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum width and number
+of layers for a 1D
+layered surface reference</p></td>
+<td colspan="3"><p>16384
+x
+2048</p></td>
+<td colspan="11"><p>32768
+x
+2048</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum width and height
+for a 2D surface
+reference bound to a
+CUDA array</p></td>
+<td colspan="3"><p>65536
+x
+65536</p></td>
+<td colspan="11"><p>1
+31072
+x
+65536</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum width, height,
+and number of layers for
+a 2D layered surface
+reference</p></td>
+<td colspan="3"><p>16384
+x
+16384 x 2048</p></td>
+<td colspan="11"><p>32768
+x
+32768 x 1048</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum width, height,
+and depth for a 3D
+surface reference bound
+to a CUDA array</p></td>
+<td colspan="3"><p>4096
+x
+4096 x 4096</p></td>
+<td colspan="11"><p>16384
+x
+16384 x 16384</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum width (and
+height) for a cubemap
+surface reference bound
+to a CUDA array</p></td>
+<td colspan="3"><p>16384</p></td>
+<td colspan="11"><p>32768</p></td>
+</tr>
+<tr class="row-even">
+<td><p>Maximum width (and
+height) and number of
+layers for a cubemap
+layered surface reference</p></td>
+<td colspan="3"><p>16384
+x
+2046</p></td>
+<td colspan="11"><p>32768
+x
+2046</p></td>
+</tr>
+<tr class="row-odd">
+<td><p>Maximum number of
+surfaces that can be
+bound to a kernel</p></td>
+<td colspan="6"><p>16</p></td>
+<td colspan="8"><p>32</p></td>
+</tr>
+</tbody>
+</table>
+
 <span id="Title-16.6.2"></span>
 
 ### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#independent-thread-scheduling"> 16.6.2、独立线程调度</a>
+
+<span id="Title-16.6"></span>
+
+## <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#compute-capability-7-x"> 16.8、计算能力 6.0</a>
+
+
 
 <span id="Title-16.8"></span>
 
