@@ -454,7 +454,7 @@ int main()
 
 &emsp;&emsp;[支持CUDA的GPU](#Title-6)列举了所有CUDA支持的`device`及计算能力。[计算能力](#Title-16)给出了每种计算能力的技术说明。
 
-> __注意__
+> **注意**
 > 特定GPU的计算能力版本不应与CUDA版本(例如，CUDA 7.5, CUDA 8, CUDA 9)混淆，CUDA版本是CUDA软件平台的版本。CUDA平台被应用程序开发人员用来创建在多代GPU架构上运行的应用程序，包括未来有待发明的GPU架构。虽然CUDA平台的新版本通常通过支持新的图形处理器架构的计算能力版本来增加对新的图形处理器架构的本地支持，但 CUDA 平台的新版本通常也包括独立于硬件生成的软件特性。
 
 &emsp;&emsp;从CUDA 7.0开始，不再支持`Tesla`架构。9.0不再支持`Fermi`架构。
@@ -515,7 +515,7 @@ int main()
 
 &emsp;&emsp;二进制文件是一个特殊的架构。`cubin`是使用`-code`编译选项指定目标架构生成的，例如：使用`-code=sm_80`编译具有8.0计算能力的`devices`生成二进制代码。二进制兼容性保证一个次要版本到下一个版本的兼容性，但不能保证从一个小版本到前一个小版本或跨主要版本的二进制兼容性。换句话说，为X.y的计算能力生成的`cubin`对象保证能在拥有X.z计算能力的`devices`上运行，只要z>=y。
 
-> __注意__
+> **注意**
 > 二进制兼容性仅支持`desktop`。二进制兼容性不支持`Tegra`。此外，`desktop`和`Tegra`之间的二进制兼容性也不支持。
 
 <span id="Title-3.1.3"></span>
@@ -608,7 +608,7 @@ nvcc x.cu
 
 &emsp;&emsp;当`host`线程调用`cudaDeviceReset()`时，这会破坏`host`线程当前操作的`device`的主`context`(即，[`device`选择](#Title-3.2.9.2)中定义的当前`device`)。任何拥有此`device`的`host`线程的下一个`runtime`函数调用将为该`device`创建一个新的主`context`。
 
-> __注意__
+> **注意**
 > CUDA接口使用全局状态，在`host`程序启动期间初始化，在`host`程序终止期间销毁。CUDA`runtime`和`driver`程序无法检测此状态是否无效，因此在程序启动或main后终止期间使用任何这些接口(隐式或显式)将导致未定义的行为。
 >
 > 从CUDA 12.0开始，`cudaSetDevice()`会在更改当前`device`的`host`线程后显示初始化`runtime`。之前的CUDA延迟了新`device` `runtime`初始化，直到`cudaSetDevice()`之后进行第一次`runtime`调用。此更改意味着现在检查`cudaSetDevice()`的初始化错误很重要。
@@ -663,7 +663,7 @@ nvcc x.cu
 </tbody>
 </table>
 
-> __注意__
+> **注意**
 > 在计算能力为5.3(`Maxwell`)和更早版本的`device`上，CUDA `drivcer`创建一个未提交的40位虚拟地址预留，以确保内存分配(指针)符合支持的范围。这个预留显示为保留的虚拟内存，但是在程序实际分配内存之前不占用任何物理内存。
 
 &emsp;&emsp;线性内存通常使用`cudaMalloc()`分配，使用`cudaFree()`释放，`host`内存和`device`内存之间的数据传输通常使用`cudaMemcpy()`完成。在`kernel`的向量加法[代码示例](#code-3.2)中，向量需要从`host`内存复制到`device`内存:
@@ -784,7 +784,7 @@ __global__ void MyKernel(cudaPitchedPtr devPitchedPtr, int width, int height, in
 }
 ```
 
-> __注意__
+> **注意**
 > 为了避免分配过多的内存从而影响系统范围的性能，根据问题大小向用户请求分配参数。如果分配失败，您可以退回到其他较慢的内存类型(`cudaMallocHost()`，`cudaHostRegister()`等)，或者返回一个错误，告诉用户需要多少内存被拒绝。如果您的应用程序由于某些原因无法请求分配参数，我们建议在支持它的平台上使用`cudaMallocManaged()`。
 
 &emsp;&emsp;参考手册列出了所有用于复制线性内存之间的内存的各种函数，用 `cudaMallocPitch()`分配的线性内存，用 `cudaMallocPitch()`或`cudaMalloc3D()`分配的线性内存，CUDA `arrays`以及在`global`或`constant`内存空间声明的变量分配的内存。
@@ -1343,7 +1343,7 @@ __global__ void clusterHist_kernel(int *bins, const int nbins, const int bins_pe
 * 在某些`device`上，页锁定的`host`内存可以映射到`device`的地址空间，从而不需要像映射内存中详细说明的那样将其复制到`device`内存或从`device`内存中复制。
 * 在具有前端总线的系统上，如果`host`内存被分配为页锁定，那么`host`内存和`device`内存之间的带宽会更高，如果另外按写-组合内存中描述的那样，`host`内存被分配为写-组合内存，那么带宽会更高。
 
-> __注意__
+> **注意**
 > 非I/O相干`Tegra` `device`上不缓存锁页`host`内存。另外，在非I/O相干`Tegra` `device`上不支持`cudaHostRegister()`。
 
 &emsp;&emsp;简单的零拷贝CUDA示例提供了关于页锁内存API的详细文档。
@@ -1517,7 +1517,7 @@ cudaStreamSetAttribute(streamB, cudaLaunchAttrMemSyncDomainMap, &mapAttr);
 
 &emsp;&emsp;与其他启动属性一样，这些属性在CUDA流、使用`cudaLaunchKernelEx`的单独启动以及CUDA图中的`kernel`节点上统一暴露。典型的使用方式是在流级别设置映射，在启动级别设置逻辑域(或者包括流使用的一部分) ，如上所述。
 
-&emsp;&emsp;在流捕获期间，这两个属性都被复制到`graph`节点。`graph`从节点本身获取这两个属性，本质上是指定物理域的间接方法。在`graph`的执行中，不使用启动到的流上设置的与领域相关的属性。
+&emsp;&emsp;在`stream capture`期间，这两个属性都被复制到`graph`节点。`graph`从节点本身获取这两个属性，本质上是指定物理域的间接方法。在`graph`的执行中，不使用启动到的流上设置的与领域相关的属性。
 
 <span id="Title-3.2.8"></span>
 
@@ -1537,7 +1537,7 @@ cudaStreamSetAttribute(streamB, cudaLaunchAttrMemSyncDomainMap, &mapAttr);
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-execution-between-host-and-device"> 3.2.8.1、`host`和`device`之间的并发执行</a>
 
-&emsp;&emsp;并发`host`执行是通过异步库函数实现的，异步库函数在设备完成请求的任务之前将控制返回给`host`线程。使用异步调用，当适当的`device`资源可用时，许多`device`操作可以排队等待由CUDA`driver`执行。这减轻了`host`线程管理`device`的大部分责任，使其可以自由地执行其他任务。下列`driver`操作对于`host`是异步的:
+&emsp;&emsp;并发`host`执行是通过异步库函数实现的，异步库函数在`device`完成请求的任务之前将控制返回给`host`线程。使用异步调用，当适当的`device`资源可用时，许多`device`操作可以排队等待由CUDA`driver`执行。这减轻了`host`线程管理`device`的大部分责任，使其可以自由地执行其他任务。下列`driver`操作对于`host`是异步的:
 
 * `kernel`启动；
 * 单个`device`内存中的内存拷贝；
@@ -1567,13 +1567,13 @@ cudaStreamSetAttribute(streamB, cudaLaunchAttrMemSyncDomainMap, &mapAttr);
 
 &emsp;&emsp;一些`device`可以在`kernel`执行的同时执行到GPU或从GPU的异步内存复制。应用程序可以通过检查异步工程计数`device`属性(请参阅[`device`枚举](#Title-3.2.9.1))来查询此功能，对于支持该功能的`device`，该属性大于零。如果复制涉及到``host`内存，那么它必须是页锁定的。
 
-&emsp;&emsp;还可以与`kernel`执行(在支持`concurrentKernel`设备属性的`device`上)和/或与`device`之间的拷贝(对于支持`syncEngineCount`属性的`device`)同时执行`device`内部拷贝。使用标准内存复制函数启动`device`内部拷贝，目标和源地址位于同一`device`上。
+&emsp;&emsp;还可以与`kernel`执行(在支持`concurrentKernel` `device`属性的`device`上)和/或与`device`之间的拷贝(对于支持`syncEngineCount`属性的`device`)同时执行`device`内部拷贝。使用标准内存复制函数启动`device`内部拷贝，目标和源地址位于同一`device`上。
 
 <span id="Title-3.2.8.4"></span>
 
 #### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-data-transfers"> 3.2.8.4、并发数据传输</a>
 
-&emsp;&emsp;一些具有2.x或更高计算能力的`device`可以与`device`之间的拷贝重叠。应用程序可以通过检查`syncEngineCount`设备属性(请参阅[`device`枚举](#Title-3.2.9.1))来查询此功能，对于支持该功能的`device`，该属性等于2。为了重叠，传输中涉及的任何`host`内存都必须是页锁定的。
+&emsp;&emsp;一些具有2.x或更高计算能力的`device`可以与`device`之间的拷贝重叠。应用程序可以通过检查`syncEngineCount` `device`属性(请参阅[`device`枚举](#Title-3.2.9.1))来查询此功能，对于支持该功能的`device`，该属性等于2。为了重叠，传输中涉及的任何`host`内存都必须是页锁定的。
 
 <span id="Title-3.2.8.5"></span>
 
@@ -1638,7 +1638,7 @@ for (int i = 0; i < 2; ++i)
 
 &emsp;&emsp;对于使用`--default-stream per-thread`编译标志编译的代码(或者在包含CUDA头之前定义`CUDA_API_PER_THREAD_DEFAULT_STREAM`宏的代码(CUDA.h 和CUDA_runtime.h)) ，默认流是常规流，每个`host`线程都有自己的默认流。
 
-> __注意__
+> **注意**
 > #define CUDA_API_PER_THREAD_DEFAULT_STREAM 1不能用于在`nvcc`编译代码时启用这种行为，因为`nvcc`隐式地在`cuda_runtime.h`顶部包含翻译单元。在这种情况下，需要使用`--default-stream per-thread`编译标志，或者需要使用`CUDA_API_PER_THREAD_DEFAULT_STREAM`宏定义`CUDA_API_PER_THREAD_DEFAULT_STREAM=1`编译标志。
 
 &emsp;&emsp;对于使用`--default-stream legacy`遗留编译标志编译的代码，默认流是一个称为NULL流的特殊流，每个`device`都有一个用于所有`host`线程的NULL流。NULL流是特殊的，因为它会导致隐式同步，如[隐式同步](#Title-3.2.8.5.4)中所述。
@@ -1698,7 +1698,7 @@ for (int i = 0; i < 2; ++i)
 
 &emsp;&emsp;然后从`host`到发布到流[1]的`device`的内存拷贝与发布到流[0]的内核启动重叠。
 
-&emsp;&emsp;在确实支持并发数据`device`的设备上，[申请和释放](#Title-3.2.5.8.1)代码样本的两个流确实重叠: 从`host`到`device`发布到流[1]的内存拷贝与从`device`到`host`发布到流[0]的内存拷贝重叠，甚至与发布到流[0]的`kernel`启动重叠(假设`device`支持数据传输和`kernel`执行的重叠)。
+&emsp;&emsp;在确实支持并发数据`device`的`device`上，[申请和释放](#Title-3.2.5.8.1)代码样本的两个流确实重叠: 从`host`到`device`发布到流[1]的内存拷贝与从`device`到`host`发布到流[0]的内存拷贝重叠，甚至与发布到流[0]的`kernel`启动重叠(假设`device`支持数据传输和`kernel`执行的重叠)。
 
 <span id="Title-3.2.8.5.6"></span>
 
@@ -1851,37 +1851,431 @@ cudaLaunchKernelEx(&configSecondary, secondary_kernel);
 
 <span id="Title-3.2.8.7"></span>
 
-#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#secondary-kernel-preamble"> 3.2.8.7、CUDA Graghs</a>
+#### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#secondary-kernel-preamble"> 3.2.8.7、CUDA `graghs`</a>
 
-&emsp;&emsp;CUDA `Graghs`为CUDA中的工作提交提供了一个新的模型。`Graghs`是由依赖关系连接的一系列操作，例如`kernel`启动，这些依赖关系与其执行分开定义。
+&emsp;&emsp;CUDA`graghs`为CUDA中的工作提交提供了一个新的模型。`graghs`是由依赖关系连接的一系列操作，例如`kernel`启动，这些依赖关系与其执行分开定义。这允许一个`graghs`定义一次，然后重复启动。将一个`graghs`的定义从其执行中分离出来可以实现许多优化: 首先，与流相比，CPU启动成本降低了，因为大部分设置是提前完成的; 其次，将整个工作流呈现给CUDA可以实现流的分段工作提交机制不可能实现的优化。
+
+&emsp;&emsp;要了解`graghs`可能带来的优化，请考虑流中发生的情况: 当您将`kernel`放入流中时，`host driver`程序执行一系列操作，为在GPU上执行`kernel`做准备。这些操作是设置和启动`kernel`所必需的，是必须为发布的每个`kernel`支付的开销成本。对于执行时间较短的GPU`kernel`来说，这种开销可能是整个端到端执行时间的很大一部分。
+
+&emsp;&emsp;使用`graghs`的工作提交分为三个不同的阶段: 定义、实例化和执行。
+
+* 在定义阶段，程序创建`graghs`中操作的描述以及它们之间的依赖关系。
+* 实例化获取`graghs`模板的快照，对其进行验证，并执行大部分工作的设置和初始化，目的是最小化在启动时需要完成的工作。生成的实例称为可执行`graghs`。
+* 与任何其他CUDA工作类似，可以将可执行`graghs`发送到流中。它可以在不重复实例化的情况下多次启动。
 
 <span id="Title-3.2.8.7.1"></span>
 
-##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#graph-structure"> 3.2.8.7.1、`Graghs`结构</a>
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#graph-structure"> 3.2.8.7.1、`graghs`结构</a>
+
+&emsp;&emsp;操作在`graghs`中形成一个节点。操作之间的依赖关系是边。这些依赖关系限制了操作的执行顺序。
+
+&emsp;&emsp;一旦操作所依赖的节点完成，就可以随时调度该操作。日程安排由CUDA系统决定。
+
+<span id="Title-3.2.8.7.1"></span>
+
+###### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#node-types"> 3.2.8.7.1.1、节点类型</a>
+
+&emsp;&emsp;`graghs`节点可以是:
+* kernel
+* CPU function call
+* memory copy
+* memset
+* empty node
+* waiting on an event
+* recording an event
+* signalling an external semaphore
+* waiting on an external semaphore
+* child graph: To execute a separate nested graph, as shown in the following figure.
+
+<span id="picture-child-graph"></span>
+
+<div> <!--块级封装-->
+    <center> <!--将图片和文字居中-->
+    <img src="images/child-graph.png"
+         style="zoom:100%"/>
+    <br> <!--换行-->
+    </center>
+</div>
+
+[Child Graph Example](#picture-child-graph)
 
 <span id="Title-3.2.8.7.2"></span>
 
-##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#creating-a-graph-using-graph-apis"> 3.2.8.7.2、使用`Graghs`API创建`Graghs`</a>
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#creating-a-graph-using-graph-apis"> 3.2.8.7.2、使用`graghs`API创建`graghs`</a>
+
+&emsp;&emsp;`graghs`可以通过两种机制创建: 显式API和`stream capture`。下面是创建和执行下图的[示例](#picture-create-a-graph)。
+
+<span id="picture-create-a-graph"></span>
+
+<div> <!--块级封装-->
+    <center> <!--将图片和文字居中-->
+    <img src="images/create-a-graph.png"
+         style="zoom:100%"/>
+    <br> <!--换行-->
+    </center>
+</div>
+
+<span id="code-3.22"></span>
+
+```C++
+// Create the graph - it starts out empty
+cudaGraphCreate(&graph, 0);
+
+// For the purpose of this example, we'll create
+// the nodes separately from the dependencies to
+// demonstrate that it can be done in two stages.
+// Note that dependencies can also be specified
+// at node creation.
+cudaGraphAddKernelNode(&a, graph, NULL, 0, &nodeParams);
+cudaGraphAddKernelNode(&b, graph, NULL, 0, &nodeParams);
+cudaGraphAddKernelNode(&c, graph, NULL, 0, &nodeParams);
+cudaGraphAddKernelNode(&d, graph, NULL, 0, &nodeParams);
+
+// Now set up dependencies on each node
+cudaGraphAddDependencies(graph, &a, &b, 1);     // A->B
+cudaGraphAddDependencies(graph, &a, &c, 1);     // A->C
+cudaGraphAddDependencies(graph, &b, &d, 1);     // B->D
+cudaGraphAddDependencies(graph, &c, &d, 1);     // C->D
+```
 
 <span id="Title-3.2.8.7.3"></span>
 
-##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#creating-a-graph-using-stream-capture"> 3.2.8.7.3、使用`Stream Capture`API创建`Graghs`</a>
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#creating-a-graph-using-stream-capture"> 3.2.8.7.3、使用`stream capture`API创建`graghs`</a>
+
+&emsp;&emsp;`stream capture`提供了一种从现有的基于流的API创建`graghs`的机制。将工作启动到流(包括现有代码)中的代码段可以用调用`cudaStreamBeginCapture()`和`cudaStreamEndCapture()`来括号。请看[下面](#code-3.23)。
+
+<span id="code-3.23"></span>
+
+```C++
+cudaGraph_t graph;
+
+cudaStreamBeginCapture(stream);
+
+kernel_A<<< ..., stream >>>(...);
+kernel_B<<< ..., stream >>>(...);
+libraryCall(stream);
+kernel_C<<< ..., stream >>>(...);
+
+cudaStreamEndCapture(stream, &graph);
+```
+
+&emsp;&emsp;调用`cudaStreamBeginCapture()`将流置于`capture`模式。当`capture`到流时，发射到流中的工作不会排队等待执行。相反，它被附加到一个正在逐步构建的内部`graghs`中。然后通过调用`cudaStreamEndCapture()`返回该`graghs`，该函数也结束了流的`capture`模式。
+
+&emsp;&emsp;`stream capture`可以用于任何CUDA流，除了`cudaStreamLegacy`(“ NULL流”)。请注意，它可以在`cudaStreamPerThread`上使用。如果程序正在使用遗留流，那么可以重新定义流0，使其成为每个线程的流，而不需要进行功能更改。见[默认流](#Title-3.2.8.5.2)
+
+&emsp;&emsp;流是否可以`capture`可以使用`cudaStreamIsCapuring()`查询。
+
+<span id="Title-3.2.8.7.3.1"></span>
+
+###### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cross-stream-dependencies-and-events"> 3.2.8.7.3.1、跨流依赖项和事件</a>
+
+&emsp;&emsp;`stream capture`可以处理用`cudaEventRecord()`和`cudaStreamWaitEvent()`表示的跨流依赖，前提是正在等待的事件被记录到同一个`capture gragh`中。
+
+&emsp;&emsp;当事件记录在处于`capture`模式的流中时，将导致`capture event`。`capture`的事件表示`capture gragh`中的一组节点。
+
+&emsp;&emsp;当一个`capture`的事件被一个流等待时，如果它还没有被`capture`，那么它将该流置于`capture`模式中，并且流中的下一个项目将对`capture`的事件中的节点具有附加的依赖关系。然后将这两个流`capture`到同一个`capture gragh`中。
+
+&emsp;&emsp;当`stream capture`中存在跨流依赖关系时，必须仍然在调用 `cudaStreamBeginCapture()`的同一流中调用`cudaStreamEndCapture()`；这是原始流。由于基于事件的依赖关系，被`capture`到同一`capture gragh`的任何其他流也必须被连接回原始流。这一点如图所示。在`cudaStreamEndCapture()`时，所有被`capture`到相同`capture gragh`的流都将脱离`capture`模式。未能重新加入原始流将导致整个`capture`操作失败。
+
+<span id="code-3.24"></span>
+
+```C++
+// stream1 is the origin stream
+cudaStreamBeginCapture(stream1);
+
+kernel_A<<< ..., stream1 >>>(...);
+
+// Fork into stream2
+cudaEventRecord(event1, stream1);
+cudaStreamWaitEvent(stream2, event1);
+
+kernel_B<<< ..., stream1 >>>(...);
+kernel_C<<< ..., stream2 >>>(...);
+
+// Join stream2 back to origin stream (stream1)
+cudaEventRecord(event2, stream2);
+cudaStreamWaitEvent(stream1, event2);
+
+kernel_D<<< ..., stream1 >>>(...);
+
+// End capture in the origin stream
+cudaStreamEndCapture(stream1, &graph);
+
+// stream1 and stream2 no longer in capture mode
+```
+
+&emsp;&emsp;[上述代码](#code-3.24)返回的`gragh`[如图](##picture-create-a-graph)所示。
+
+> **注意**
+> 当一个流脱离`capture`模式时，流中的下一个未`capture`项(如果有的话)仍然依赖于最近的前一个未`capture`项，尽管中间项已被删除。
+
+<span id="Title-3.2.8.7.3.2"></span>
+
+###### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#prohibited-and-unhandled-operations"> 3.2.8.7.3.2、禁止和未经处理的操作</a>
+
+&emsp;&emsp;同步或查询正在`capture`的流或`capture`的事件的执行状态是无效的，因为它们不表示计划执行的项。当任何相关流处于`capture`模式时，查询包含活动流`capture`(如`device`或`context`句柄)的更广句柄的执行状态或同步该句柄也是无效的。
+
+&emsp;&emsp;当`capture`同一`context`中的任何流时，如果没有使用`cudaStreamNonBlock`创建该流，则任何尝试使用遗留流的做法都是无效的。这是因为遗留流句柄在任何时候都包含这些其他流; 排队到遗留流将创建对被`capture`的流的依赖，而查询或同步它将查询或同步被`capture`的流。
+
+&emsp;&emsp;因此，在这种情况下调用同步API也是无效的。同步API(比如`cudaMemcpy()`)将工作放入遗留流中，并在返回之前对其进行同步。
+
+> **注意**
+> 作为一般规则，当依赖关系将被`capture`的内容与未`capture`的内容连接起来并排队等待执行时，CUDA更愿意返回错误，而不是忽略依赖关系。将流放入`capture`模式或放出`capture`模式时会出现例外情况; 这会切断紧接在模式转换之前和之后添加到流中的项之间的依赖关系。
+
+&emsp;&emsp;通过等待来自被`capture`的流的`capture`事件来合并两个单独的`capture gragh`是无效的，该事件被`capture`并且与与事件不同的`capture gragh`相关联。等待未`capture`的来自正在`capture`的流的事件，而不指定`cudaEventWaitForeign`标志是无效的。
+
+&emsp;&emsp;将异步操作排队到流中的少数API当前在`gragh`中不受支持，如果使用被`capture`的流调用它们，将返回一个错误，比如`cudaStreamAttachMemAsync()`。
+
+<span id="Title-3.2.8.7.3.3"></span>
+
+###### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#invalidation"> 3.2.8.7.3.3、无效</a>
+
+&emsp;&emsp;当在`stream capture`期间尝试无效操作时，任何关联的`capture gragh`都将失效。当一个`capture gragh`失效时，进一步使用任何被`capture`的流或与该`gragh`关联的被`capture`的事件都是无效的，并且将返回一个错误，直到流`capture`以`cudaStreamEndCapture()`结束。这个调用将使相关的流脱离`capture`模式，但也将返回一个错误值和一个NULL`gragh`。
 
 <span id="Title-3.2.8.7.4"></span>
 
-##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-user-objects"> 3.2.8.7.4、CUDA 用户对象</a>
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#cuda-user-objects"> 3.2.8.7.4、`CUDA User Objects`</a>
+
+&emsp;&emsp;`CUDA User Objects`可以用来帮助管理CUDA中异步工作所使用的资源的生命周期。特别是，这个特性对[CUDA `graghs`](#Title-3.2.8.7)和[`stream capture`](#Title-3.2.8.7.3)非常有用。
+
+&emsp;&emsp;各种资源管理方案与CUDA`gragh`不兼容。例如，考虑一个基于事件的池或同步创建、异步销毁方案。
+
+<span id="code-3.25"></span>
+
+```C++
+// Library API with pool allocation
+void libraryWork(cudaStream_t stream)
+{
+    auto &resource = pool.claimTemporaryResource();
+    resource.waitOnReadyEventInStream(stream);
+    launchWork(stream, resource);
+    resource.recordReadyEvent(stream);
+}
+```
+
+<span id="code-3.26"></span>
+
+```C++
+// Library API with asynchronous resource deletion
+void libraryWork(cudaStream_t stream)
+{
+    Resource *resource = new Resource(...);
+    launchWork(stream, resource);
+    cudaStreamAddCallback(
+        stream,
+        [](cudaStream_t, cudaError_t, void *resource)
+        {
+            delete static_cast<Resource *>(resource);
+        },
+        resource,
+        0);
+    // Error handling considerations not shown
+}
+```
+
+&emsp;&emsp;这些方案对于CUDA`gragh`来说是困难的，因为对于需要间接访问或`gragh`更新的资源来说，非固定的指针或句柄，以及每次工作提交时所需的同步CPU代码。如果这些注意事项对库的调用方隐藏，并且由于在`capture`期间使用了不允许的API，那么它们也不能用于`stream capture`。存在各种解决方案，比如向调用者公开资源。`CUDA User Objects`提供了另一种方法。
+
+&emsp;&emsp;`CUDA User Objects`将用户指定的析构函数回调与内部引用计数相关联，类似于C++ share_ptr。引用可能由CPU上的用户代码和CUDA`graphs`所拥有。注意，对于用户拥有的引用，与C++智能指针不同，没有表示引用的对象; 用户必须手动跟踪用户拥有的引用。典型的用例是在创建用户对象之后立即将唯一的用户拥有的引用移动到CUDA`graphs`。
+
+&emsp;&emsp;当引用与CUDA`graphs`相关联时，CUDA将自动管理`graphs`操作。克隆的`cudaGraph_t`保留源`cudaGraph_t`拥有的每个引用的副本，具有相同的多样性。实例化的 `cudaGraphExec_t`保留源`cudaGraph_t`中每个引用的副本。如果在没有同步的情况下销毁了 `cudaGraphExec_t`，那么引用将被保留，直到执行完成。
+
+<span id="code-3.27"></span>
+
+```C++
+cudaGraph_t graph;  // Preexisting graph
+
+Object *object = new Object;  // C++ object with possibly nontrivial destructor
+cudaUserObject_t cuObject;
+cudaUserObjectCreate(
+    &cuObject,
+    object,  // Here we use a CUDA-provided template wrapper for this API,
+             // which supplies a callback to delete the C++ object pointer
+    1,  // Initial refcount
+    cudaUserObjectNoDestructorSync  // Acknowledge that the callback cannot be
+                                    // waited on via CUDA
+);
+cudaGraphRetainUserObject(
+    graph,
+    cuObject,
+    1,  // Number of references
+    cudaGraphUserObjectMove  // Transfer a reference owned by the caller (do
+                             // not modify the total reference count)
+);
+// No more references owned by this thread; no need to call release API
+cudaGraphExec_t graphExec;
+cudaGraphInstantiate(&graphExec, graph, nullptr, nullptr, 0);  // Will retain a
+                                                               // new reference
+cudaGraphDestroy(graph);  // graphExec still owns a reference
+cudaGraphLaunch(graphExec, 0);  // Async launch has access to the user objects
+cudaGraphExecDestroy(graphExec);  // Launch is not synchronized; the release
+                                  // will be deferred if needed
+cudaStreamSynchronize(0);  // After the launch is synchronized, the remaining
+                           // reference is released and the destructor will
+                           // execute. Note this happens asynchronously.
+// If the destructor callback had signaled a synchronization object, it would
+// be safe to wait on it at this point.
+```
+
+&emsp;&emsp;子图节点中的`graph`所拥有的引用与子`graph`关联，而不是与父`graph`关联。如果子`graph`被更新或删除，引用也会相应改变。如果一个可执行`graph`或子`graph`使用`cudaGraphExecUpdate`或`cudaGraphExecChildGraphNodeSetParams`更新，则将克隆新源`graph`中的引用并替换目标`graph`中的引用。在任何一种情况下，如果之前的启动没有同步，那么任何将被释放的引用都将被保留，直到启动完成执行。
+
+&emsp;&emsp;目前还没有通过CUDA API等待用户对象析构函数的机制。用户可以从析构函数代码手动发出同步对象信号。此外，从析构函数调用CUDA API是不合法的，类似于`cudaLaunchHostFunc`的限制。这是为了避免阻塞CUDA内部共享线程和阻止前进。如果依赖关系是单向的，并且执行调用的线程不能阻止CUDA工作的前进，那么通知另一个线程执行API调用是合法的。
+
+&emsp;&emsp;`User objects`用`cudaUserObjectCreate`创建的，这是浏览相关API的一个很好的起点。
 
 <span id="Title-3.2.8.7.5"></span>
 
-##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#updating-instantiated-graphs"> 3.2.8.7.5、更新实例化`Graghs`</a>
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#updating-instantiated-graphs"> 3.2.8.7.5、更新实例化`graghs`</a>
+
+&emsp;&emsp;使用`graphs`的工作提交分为三个不同的阶段: 定义、实例化和执行。在工作流不发生变化的情况下，定义和实例化的开销可以分摊到许多执行中，而且`graphs`比流提供了明显的优势。
+
+&emsp;&emsp;`graph`是工作流的快照，包括`kernel`、参数和依赖关系，以便尽可能快速有效地重放它。在工作流更改的情况下，`graph`将过时，必须进行修改。`graph`结构(如拓扑或节点类型)的重大更改将需要重新实例化源`graph`，因为必须重新应用各种与拓扑相关的优化技术。
+
+&emsp;&emsp;重复实例化的代价可能会降低`graph`执行带来的总体性能好处，但通常只有节点参数(如`kernel`参数和`cudaMemcpy`地址)会发生变化，而`graph`拓扑保持不变。对于这种情况，CUDA提供了一种称为`Graph Update`的轻量级机制，它允许就地修改某些节点参数，而不必重新构建整个`graph`。这比重新实例化要有效得多。
+
+&emsp;&emsp;更新将在下次启动`graph`时生效，因此它们不会影响以前的`graph`启动，即使它们在更新时正在运行。一个`graph`可以反复更新和重新启动，因此多个更新/启动可以在一个流上排队。
+
+&emsp;&emsp;CUDA提供了两种实例化`graph`参数更新机制，即整个`graph`更新和单个节点更新。全`graph`更新允许用户提供一个拓扑相同的`cudaGraph_t`对象，其节点包含更新的参数。单个节点更新允许用户显式更新单个节点的参数。当大量节点被更新时，或者当调用者不知道`graph`拓扑结构时(例如，库调用的`stream capture`产生的`graph`)，使用更新后的`cudaGraph_t`更方便。当更改数量较少且用户具有需要更新的节点的句柄时，首选使用单个节点更新。单个节点更新会跳过对未更改的节点的拓扑检查和比较，因此在许多情况下可以更有效率。
+
+&emsp;&emsp;CUDA还提供了一种机制来启用和禁用单个节点，而不会影响它们当前的参数。
+
+&emsp;&emsp;以下各节将更详细地解释每种方法。
+
+<span id="Title-3.2.8.7.5.1"></span>
+
+###### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#graph-update-limitations"> 3.2.8.7.5.1、`graghs`更新限制</a>
+
+&emsp;&emsp;`kernel`节点：
+* 不能更改函数的所有`context`。
+* 如果一个节点的函数最初没有使用CUDA动态并行，那么它就不能被更新为使用CUDA动态并行的函数。
+
+`cudaMemset`和`cudaMemcpy`节点：
+* 操作数已经被分配或映射的CUDA`device`不能修改。
+* 源或目标内存必须使用同一个`context`分配作为原始源或目标内存。
+* 只能修改1D`cudaMemset`或`cudaMemcpy`节点。
+
+&emsp;&emsp;额外的内存节点限制：
+* 不支持更改源或目标内存类型(例如，`cudaPitchedPtr`、`cudaArray_t`等) ，也不支持更改传输类型(例如，`cudaMemcpykind`)。
+
+&emsp;&emsp;外部信号量等待节点和记录节点:
+* 不支持更改信号量的数目。
+
+&emsp;&emsp;对主机节点、事件记录节点或事件等待节点的更新没有限制。
+
+<span id="Title-3.2.8.7.5.2"></span>
+
+###### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#whole-graph-update"> 3.2.8.7.5.2、全`graghs`更新</a>
+
+&emsp;&emsp;`cudaGraphExecUpdate()`允许使用拓扑相同的`gragh`(“更新”`gragh`)中的参数更新实例化的`gragh`(“原始`gragh`”)。更新`gragh`的拓扑结构必须与用于实例化`cudaGraphExec_t`的原始`gragh`相同。此外，指定依赖项的顺序必须匹配。最后，CUDA需要对`sink node`(没有依赖关系的节点)进行一致的排序。CUDA依赖于特定API调用的顺序来实现一致的`sink node`排序。
+
+&emsp;&emsp;更明确地说，遵循以下规则将导致`cudaGraphExecUpdate()`确定性地将原始`gragh`中的节点与更新`gragh`中的节点配对:
+
+* 对于任何捕获流，在该流上操作的API调用必须以相同的顺序进行，包括事件等待和其他与节点创建不直接对应的API调用。直接操作给定`gragh`节点的传入边(包括`capture`的流API、节点添加API和边添加/删除 API)的API调用必须以相同的顺序进行。此外，当在这些API的数组中指定依赖项时，在这些数组中指定依赖项的顺序必须匹配。
+* `sink node`必须始终按顺序排列。`sink node`是没有依赖、超过边界在调用`cudaGraphExecUpdate()`时最后的`gragh`节点，。以下操作影响`sink node`排序(如果存在) ，并且必须(作为一个组合集)按相同的顺序进行:
+* 节点添加导致`sink node`的API。
+* 边缘删除导致节点成为`sink node`。
+* `CudaStreamUpdateCaptureDependency()`，如果它从`capture stream`的依赖集中移除了`sink node`。
+* `cudaStreamEndCapture()`。
+
+&emsp;&emsp;[下面的例子](#code-3.28)展示了如何使用API来更新实例化的`graph`:
+
+<span id="code-3.28"></span>
+
+```C++
+cudaGraphExec_t graphExec = NULL;
+
+for (int i = 0; i < 10; i++) {
+    cudaGraph_t graph;
+    cudaGraphExecUpdateResult updateResult;
+    cudaGraphNode_t errorNode;
+
+    // In this example we use stream capture to create the graph.
+    // You can also use the Graph API to produce a graph.
+    cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal);
+
+    // Call a user-defined, stream based workload, for example
+    do_cuda_work(stream);
+
+    cudaStreamEndCapture(stream, &graph);
+
+    // If we've already instantiated the graph, try to update it directly
+    // and avoid the instantiation overhead
+    if (graphExec != NULL) {
+        // If the graph fails to update, errorNode will be set to the
+        // node causing the failure and updateResult will be set to a
+        // reason code.
+        cudaGraphExecUpdate(graphExec, graph, &errorNode, &updateResult);
+    }
+
+    // Instantiate during the first iteration or whenever the update
+    // fails for any reason
+    if (graphExec == NULL || updateResult != cudaGraphExecUpdateSuccess) {
+
+        // If a previous update failed, destroy the cudaGraphExec_t
+        // before re-instantiating it
+        if (graphExec != NULL) {
+            cudaGraphExecDestroy(graphExec);
+        }
+        // Instantiate graphExec from graph. The error node and
+        // error message parameters are unused here.
+        cudaGraphInstantiate(&graphExec, graph, NULL, NULL, 0);
+    }
+
+    cudaGraphDestroy(graph);
+    cudaGraphLaunch(graphExec, stream);
+    cudaStreamSynchronize(stream);
+}
+```
+
+&emsp;&emsp;典型的工作流是使用`stream capture`或`graph`API创建初始`cudaGraph_t`。然后，实例化`cudaGraph_t`并像往常一样启动它。在初始启动之后，使用与初始图形相同的方法创建新的`cudaGraph_t`，并调用`cudaGraphExecUpdate()`。如果`graph`更新成功(由上面示例中的`updateResult`参数指示) ，则启动更新后的`cudaGraphExec_t`。如果更新由于任何原因失败，则调用`cudaGraphExecDestroy()`和`cudaGraphInstantiate()`来销毁原来的`cudaGraphExec_t`并实例化一个新的实例。
+
+&emsp;&emsp;也可以直接更新`cudaGraph_t`节点(例如，使用`cudaGraphKernelNodeSetParams()`) ，然后更新`cudaGraphExec_t`，但是使用下一节介绍的显式节点更新API会更有效。
+
+&emsp;&emsp;有关使用和当前限制的更多信息，请参见<a href="https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__GRAPH.html#group__CUDART__GRAPH">GraphAPI</a>。
+
+<span id="Title-3.2.8.7.5.3"></span>
+
+###### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#individual-node-update"> 3.2.8.7.5.3、单个节点更新</a>
+
+&emsp;&emsp;可以直接更新实例化的`graph`节点参数。这消除了实例化的开销以及创建一个新的`cudaGraph_t`的开销。如果需要更新的节点数相对于`graph`中的节点总数很少，则最好单独更新这些节点。以下方法可用于更新`cudaGraphExec_t`节点：
+* `cudaGraphExecKernelNodeSetParams()`
+* `cudaGraphExecMemcpyNodeSetParams()`
+* `cudaGraphExecMemsetNodeSetParams()`
+* `cudaGraphExecHostNodeSetParams()`
+* `cudaGraphExecChildGraphNodeSetParams()`
+* `cudaGraphExecEventRecordNodeSetEvent()`
+* `cudaGraphExecEventWaitNodeSetEvent()`
+* `cudaGraphExecExternalSemaphoresSignalNodeSetParams()`
+* `cudaGraphExecExternalSemaphoresWaitNodeSetParams()`
+
+&emsp;&emsp;有关使用和当前限制的更多信息，请参见<a href="https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__GRAPH.html#group__CUDART__GRAPH">GraphAPI</a>。
+
+<span id="Title-3.2.8.7.5.4"></span>
+
+###### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#individual-node-enable"> 3.2.8.7.5.4、单个节点启用</a>
+
+&emsp;&emsp;可以使用`cudaGraphNodeSetEnable()` API来启用或禁用实例化`gragh`中的`kernel`、memset和memcpy节点。这允许创建一个包含所需功能的超集的`gragh`，这个超集可以为每次启动定制。可以使用`cudaGraphNodeGetEnabled()`API查询节点的启用状态。
+
+
+
+
+
+
 
 <span id="Title-3.2.8.7.6"></span>
 
-##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#using-graph-apis"> 3.2.8.7.6、使用`Graghs`APIs</a>
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#using-graph-apis"> 3.2.8.7.6、使用`graghs`APIs</a>
+
+&emsp;&emsp;`cudaGraph_t`对象不是线程安全的。用户有责任确保多个线程不会并发地访问同一 `cudaGraph_t`。
+
+&emsp;&emsp;`CudaGraphExec_t`不能与自身并发运行。`CudaGraphExec_t`的启动将在以前启动相同的可执行`gragh`之后排序。
+
+&emsp;&emsp;`gragh`的执行是在流中完成的，以便与其他异步工作排序。然而，该流仅用于订购；它不会约束`gragh`的内部并行性，也不会影响`gragh`节点的执行位置。
+
+&emsp;&emsp;请参见<a href="https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__GRAPH.html#group__CUDART__GRAPH">GraphAPI</a>。
 
 <span id="Title-3.2.8.7.7"></span>
 
-##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-graph-launch"> 3.2.8.7.7、`device` `Graghs`启动</a>
+##### <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#device-graph-launch"> 3.2.8.7.7、`device` `graghs`启动</a>
 
 <span id="Title-3.2.8.8"></span>
 
